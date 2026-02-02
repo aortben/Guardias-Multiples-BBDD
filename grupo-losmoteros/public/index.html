@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guardias IES Alixar - Dashboard</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
+    <link rel="stylesheet" href="css/estilos.css">
+
+    <style>
+        /* Estilos específicos para métricas y spinner */
+        .metrics-panel {
+            background: #1e1e24;
+            color: #00ff9d;
+            font-family: 'Courier New', monospace;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 0.8rem;
+            border: 1px solid #333;
+        }
+        .metric-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
+        .metric-label { color: #888; }
+        .metric-value { font-weight: bold; }
+
+        /* Spinner Overlay */
+        .loading-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.8);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            backdrop-filter: blur(2px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+        .loading-overlay.visible { opacity: 1; pointer-events: all; }
+        
+        .spinner-circle {
+            width: 40px; height: 40px;
+            border: 4px solid #ddd;
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Estilo para Guardia Ausente */
+        .profesor-tag.ausente {
+            background-color: #ffe5e5;
+            color: #d32f2f;
+            text-decoration: line-through;
+            border: 1px dashed #d32f2f;
+            opacity: 0.7;
+        }
+        .profesor-tag.disponible {
+            background-color: #e3fcef;
+            color: #008f53;
+            border: 1px solid #008f53;
+        }
+        .table-container { position: relative; min-height: 200px; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="brand">
+            <div class="logo-box">
+                <i class="ph-bold ph-shield-check"></i>
+            </div>
+            <div class="brand-text">
+                <h1>IES ALIXAR</h1>
+                <span>Panel de Guardias</span>
+            </div>
+        </div>
+        
+        <div class="user-profile">
+            <span class="status-indicator"></span>
+            <span class="live-text">En vivo</span>
+        </div>
+    </nav>
+
+    <main class="main-layout">
+        
+        <aside class="sidebar">
+            <div class="calendar-card">
+                <div class="calendar-header">
+                    <h3 id="currentMonth">Mes</h3>
+                    <div class="calendar-nav">
+                        <button id="prevMonth"><i class="ph ph-caret-left"></i></button>
+                        <button id="nextMonth"><i class="ph ph-caret-right"></i></button>
+                    </div>
+                </div>
+                <div class="calendar-grid" id="calendarGrid"></div>
+            </div>
+
+            <div class="metrics-panel">
+                <div class="metric-row">
+                    <span class="metric-label">Procesos Asíncronos (Fetch):</span>
+                    <span class="metric-value" id="metricAsync">0 ms</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Procesos Síncronos (DOM):</span>
+                    <span class="metric-value" id="metricSync">0 ms</span>
+                </div>
+                <div class="metric-row" style="margin-top:5px; border-top:1px solid #444; padding-top:5px;">
+                    <span class="metric-label">Total Cliente:</span>
+                    <span class="metric-value" id="metricTotal">0 ms</span>
+                </div>
+                <div style="font-size: 0.7rem; color: #666; margin-top: 5px;">
+                    *Ver terminal Node.js para tiempos de servidor.
+                </div>
+            </div>
+
+            <button class="btn-primary-lg" style="margin-top: 20px;" onclick="abrirModal()">
+                <i class="ph-bold ph-plus"></i>
+                Comunicar Ausencia
+            </button>
+        </aside>
+
+        <section class="content-area">
+            <header class="content-header">
+                <div>
+                    <h2 id="tituloFecha">Hoy</h2>
+                    <p class="subtitle">Estado de las aulas y sustituciones</p>
+                </div>
+                <div class="header-filters">
+                    <button id="btnHoy" class="filter-chip active" onclick="seleccionarDia('hoy')">Hoy</button>
+                    <button id="btnManana" class="filter-chip" onclick="seleccionarDia('manana')">Mañana</button>
+                </div>
+            </header>
+
+            <div class="table-container">
+                <div id="loadingOverlay" class="loading-overlay">
+                    <div class="spinner-circle"></div>
+                    <p style="margin-top:10px; font-weight:500;">Sincronizando...</p>
+                </div>
+
+                <table class="tabla-guardias">
+                    <thead>
+                        <tr>
+                            <th class="th-hora">Hora</th>
+                            <th><i class="ph ph-chalkboard-teacher"></i> Profesores de Guardia</th>
+                            <th><i class="ph ph-warning-circle"></i> Ausencias a Cubrir</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaBody">
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <div id="modalAusencia" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2>Nueva Ausencia</h2>
+                <button class="btn-close" onclick="cerrarModal()"><i class="ph ph-x"></i></button>
+            </div>
+            <form id="formAusencia">
+                <div class="modal-body">
+                    <div class="form-group full-width">
+                        <label>Profesor</label>
+                        <div class="select-wrapper">
+                            <select id="selectProfesor" required>
+                                <option value="">Cargando lista...</option>
+                            </select>
+                            <i class="ph ph-caret-down"></i>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Fecha de la falta</label>
+                        <input type="date" id="inputFecha" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Hora afectada</label>
+                        <div class="select-wrapper">
+                            <select id="selectHora" required>
+                                <option value="1º">1º Hora</option>
+                                <option value="2º">2º Hora</option>
+                                <option value="3º">3º Hora</option>
+                                <option value="4º">4º Hora</option>
+                                <option value="5º">5º Hora</option>
+                                <option value="6º">6º Hora</option>
+                            </select>
+                            <i class="ph ph-clock"></i>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Grupo / Clase</label>
+                        <input type="text" id="inputGrupo" placeholder="Ej: 4º ESO B" required>
+                    </div>
+                    
+                    <div class="form-group full-width">
+                        <label>Tarea para el alumnado</label>
+                        <textarea id="inputTarea" rows="3" placeholder="Describe la actividad..." required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" onclick="cerrarModal()">Cancelar</button>
+                    <button type="submit" class="btn-primary">Guardar Ausencia</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="toast" class="toast">
+        <i class="ph-fill ph-check-circle"></i>
+        <span>Datos actualizados en tiempo real</span>
+    </div>
+
+    <script src="js/script.js"></script>
+</body>
+</html>

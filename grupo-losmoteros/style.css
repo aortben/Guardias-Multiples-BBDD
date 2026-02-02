@@ -1,0 +1,128 @@
+:root {
+      --primary: #003366; /* Azul Alixar */
+      --secondary: #e74c3c; /* Rojo Ausencia */
+      --success: #27ae60; /* Verde Guardia */
+      --light: #f4f6f8;
+      --dark: #2c3e50;
+    }
+    body { font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--light); color: var(--dark); }
+    
+    /* NAVBAR */
+    .navbar {
+      background: var(--primary);
+      color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .navbar h1 { margin: 0; font-size: 1.5rem; letter-spacing: 1px; }
+    .nav-controls button {
+      background: rgba(255,255,255,0.2);
+      border: 1px solid white;
+      color: white;
+      padding: 8px 15px;
+      margin-left: 10px;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: 0.3s;
+    }
+    .nav-controls button:hover, .nav-controls button.active {
+      background: white;
+      color: var(--primary);
+    }
+
+    /* CONTENEDOR PRINCIPAL */
+    .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+
+    /* CABECERA DE TABLA Y ACCIONES */
+    .header-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .btn-ausencia {
+      background: var(--secondary);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      font-size: 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      box-shadow: 0 2px 5px rgba(231, 76, 60, 0.4);
+    }
+    .btn-ausencia:hover { background: #c0392b; }
+
+    /* TABLA GRANDE */
+    .tabla-guardias {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    .tabla-guardias th {
+      background: var(--dark);
+      color: white;
+      padding: 15px;
+      text-align: left;
+      font-size: 1.1rem;
+    }
+    /* Estilo de columnas */
+    .col-hora { width: 10%; text-align: center; font-weight: bold; background: #ecf0f1; border-bottom: 1px solid #bdc3c7;}
+    .col-guardia { width: 40%; border-right: 2px solid #ecf0f1; vertical-align: top; }
+    .col-ausencia { width: 50%; vertical-align: top; background: #fff5f5; }
+
+    .tabla-guardias td { padding: 15px; border-bottom: 1px solid #ecf0f1; }
+    
+    /* Tarjetas dentro de las celdas */
+    .profesor-tag {
+      display: inline-block;
+      background: #e8f8f5;
+      color: var(--success);
+      padding: 5px 10px;
+      border-radius: 15px;
+      margin: 2px;
+      border: 1px solid var(--success);
+      font-size: 0.9rem;
+    }
+    .ausencia-card {
+      background: white;
+      border-left: 4px solid var(--secondary);
+      padding: 8px;
+      margin-bottom: 6px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      font-size: 0.9rem;
+    }
+    .ausencia-card strong { color: var(--secondary); display: block;}
+    .ausencia-card span { color: #7f8c8d; font-size: 0.85rem; }
+
+    /* MODAL */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      width: 400px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+    .modal h2 { margin-top: 0; color: var(--primary); }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+    .form-group select, .form-group input, .form-group textarea {
+      width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;
+    }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+    .btn-cancel { background: #95a5a6; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; }
+    .btn-submit { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; }
