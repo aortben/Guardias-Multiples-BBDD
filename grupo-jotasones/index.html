@@ -1,120 +1,484 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Guardias</title>
+    <title>Panel de Guardias + Monitor</title>
     <style>
-        body { font-family: sans-serif; padding: 20px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
-        th { background-color: #007bff; color: white; }
-        input[type="text"] { width: 90%; padding: 5px; }
-        input[type="number"] { width: 50px; padding: 5px; }
-        button { background-color: #28a745; color: white; border: none; padding: 8px 15px; cursor: pointer; border-radius: 4px; }
-        button:hover { background-color: #218838; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+            background-color: #f0f2f5;
+            padding-bottom: 100px;
+        }
+
+        .dashboard {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+
+        .panel {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .panel-izquierda {
+            flex: 3;
+        }
+
+        .panel-derecha {
+            flex: 2;
+            border-top: 5px solid #007bff;
+            min-height: 400px;
+        }
+
+        h2 {
+            margin-top: 0;
+            color: #444;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        /* Estilos generales (Inputs, Tablas, etc) */
+        #buscador {
+            width: 96%;
+            padding: 12px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th {
+            background-color: #f1f3f5;
+            color: #333;
+            font-weight: 600;
+            padding: 12px 8px;
+            text-align: left;
+        }
+
+        td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #eee;
+            vertical-align: middle;
+        }
+
+        select,
+        input[type="text"] {
+            padding: 5px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+
+        .grupo-horas {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-guardar {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .btn-cancelar {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .badge-grupo {
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .badge-hora {
+            background: #fff3cd;
+            color: #856404;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            border: 1px solid #ffeeba;
+        }
+
+        /* --- ESTILOS DEL MONITOR DE RENDIMIENTO --- */
+        .monitor-section {
+            margin-top: 40px;
+            background: #2d2d2d;
+            color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .monitor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #555;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+        }
+
+        .stats-box {
+            display: flex;
+            gap: 20px;
+        }
+
+        .stat-item {
+            background: #444;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .stat-val {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #4db8ff;
+        }
+
+        .stat-label {
+            font-size: 0.8em;
+            color: #ccc;
+        }
+
+        .log-table {
+            width: 100%;
+            font-family: monospace;
+            font-size: 12px;
+        }
+
+        .log-table th {
+            background-color: #444;
+            color: white;
+        }
+
+        .log-table td {
+            border-bottom: 1px solid #444;
+            color: #ccc;
+        }
+
+        /* Colores según tiempo de respuesta */
+        .tiempo-ok {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        /* Verde: rápido */
+        .tiempo-warn {
+            color: #ffc107;
+            font-weight: bold;
+        }
+
+        /* Amarillo: regular */
+        .tiempo-bad {
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        /* Rojo: lento */
     </style>
 </head>
+
 <body>
 
-    <h2>Panel de Gestión de Guardias</h2>
-    
-    <table>
-        <thead>
-            <tr>
-                <th>Profesor</th>
-                <th>Hora</th>
-                <th>Tarea / Observaciones</th>
-                <th>¿Ausencia?</th>
-                <th>Acción</th>
-            </tr>
-        </thead>
-        <tbody id="tabla-contenido"></tbody>
-    </table>
+    <h1 style="text-align:center; color:#333;">Gestión de Guardias</h1>
+
+    <div class="dashboard">
+        <div class="panel panel-izquierda">
+            <h2>🔎 Asignar Ausencia</h2>
+            <input type="text" id="buscador" placeholder="Escribe el nombre del profesor..." autocomplete="off">
+            <table id="tabla-resultados-container">
+                <thead>
+                    <tr>
+                        <th>Profesor</th>
+                        <th>Clase</th>
+                        <th>Horario</th>
+                        <th>Tarea</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-resultados"></tbody>
+            </table>
+            <p id="aviso-busqueda" style="text-align:center; color:#888; margin-top:20px;">Busca un profesor para
+                empezar.</p>
+        </div>
+
+        <div class="panel panel-derecha">
+            <h2>🚨 Ausencias Activas</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Detalles</th>
+                        <th>Tarea</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-ausencias"></tbody>
+            </table>
+            <p id="mensaje-sin-ausencias" style="text-align:center; color:#888; display:none">No hay ausencias.</p>
+        </div>
+    </div>
+
+    <div class="monitor-section">
+        <div class="monitor-header">
+            <h3>⚡ Monitor de Rendimiento (Red)</h3>
+            <div class="stats-box">
+                <div class="stat-item">
+                    <div id="stat-total" class="stat-val">0</div>
+                    <div class="stat-label">Peticiones</div>
+                </div>
+                <div class="stat-item">
+                    <div id="stat-avg" class="stat-val">0 ms</div>
+                    <div class="stat-label">Promedio</div>
+                </div>
+                <div class="stat-item">
+                    <div id="stat-last" class="stat-val">0 ms</div>
+                    <div class="stat-label">Última</div>
+                </div>
+            </div>
+        </div>
+        <table class="log-table">
+            <thead>
+                <tr>
+                    <th>Hora</th>
+                    <th>Método</th>
+                    <th>Endpoint</th>
+                    <th>Estado</th>
+                    <th>Tiempo (ms)</th>
+                </tr>
+            </thead>
+            <tbody id="tabla-logs">
+            </tbody>
+        </table>
+    </div>
 
     <script>
-        const API_URL = 'http://localhost:3000/api';
+        const API_URL = 'http://172.22.0.195:3000/api';
+        let todosLosProfesores = [];
 
-        // 1. Cargar lista de profesores
-        async function cargarProfesores() {
-            const res = await fetch(`${API_URL}/profesores`);
-            const profesores = await res.json();
-            
-            const tbody = document.getElementById('tabla-contenido');
-            tbody.innerHTML = ''; // Limpiar
+        // Variables para estadísticas
+        let logsPeticiones = [];
 
-            profesores.forEach(profe => {
-                const tr = document.createElement('tr');
+        // --- 1. FUNCIÓN "WRAPPER" PARA MEDIR TIEMPO ---
+        // Esta función sustituye al fetch normal
+        async function hacerPeticion(url, opciones = {}) {
+            const inicio = performance.now(); // Arranca cronómetro
 
-                // Creamos inputs con IDs únicos basados en el ID del profesor
-                // Ejemplo: id="tarea-5" para el profesor con ID 5
-                tr.innerHTML = `
-                    <td style="text-align: left; font-weight: bold;">${profe.nombre} ${profe.apellidos}</td>
-                    
-                    <td>
-                        <input type="number" id="hora-${profe.id}" placeholder="1-6" min="1" max="6">
-                    </td>
-                    
-                    <td>
-                        <input type="text" id="tarea-${profe.id}" placeholder="Ej: Ejercicios pág 20...">
-                    </td>
-                    
-                    <td>
-                        <input type="checkbox" id="ausencia-${profe.id}">
-                    </td>
-                    
-                    <td>
-                        <button onclick="enviarReporte(${profe.id})">Guardar</button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
+            try {
+                // Hacemos el fetch real
+                const respuesta = await fetch(url, opciones);
+
+                const fin = performance.now(); // Para cronómetro
+                const duracion = (fin - inicio).toFixed(2); // Calculamos diferencia
+
+                // Registramos el log
+                registrarLog(url, opciones.method || 'GET', respuesta.status, duracion);
+
+                return respuesta; // Devolvemos la respuesta para que el resto del código funcione
+            } catch (error) {
+                const fin = performance.now();
+                registrarLog(url, opciones.method || 'GET', 'ERROR', (fin - inicio).toFixed(2));
+                throw error;
+            }
         }
 
-        // 2. Función para ENVIAR los datos (POST)
-        async function enviarReporte(idProfesor) {
-            // Recoger los valores de LOS inputs de ESE profesor específico
-            const horaVal = document.getElementById(`hora-${idProfesor}`).value;
-            const tareaVal = document.getElementById(`tarea-${idProfesor}`).value;
-            const ausenciaVal = document.getElementById(`ausencia-${idProfesor}`).checked;
+        // --- 2. LÓGICA DE ESTADÍSTICAS Y TABLA ---
+        function registrarLog(url, metodo, estado, tiempo) {
+            // Guardar dato
+            logsPeticiones.push({ tiempo: parseFloat(tiempo) });
 
-            if(!horaVal) {
-                alert("Por favor, indica la hora.");
+            // Recalcular estadísticas
+            const total = logsPeticiones.length;
+            const suma = logsPeticiones.reduce((a, b) => a + b.tiempo, 0);
+            const promedio = (suma / total).toFixed(1);
+
+            // Actualizar DOM Estadísticas
+            document.getElementById('stat-total').innerText = total;
+            document.getElementById('stat-avg').innerText = promedio + ' ms';
+            document.getElementById('stat-last').innerText = tiempo + ' ms';
+
+            // Actualizar Tabla de Logs (Añadimos arriba del todo)
+            const tbody = document.getElementById('tabla-logs');
+            const row = document.createElement('tr');
+
+            // Clase de color según velocidad
+            let colorClass = 'tiempo-ok';
+            if (tiempo > 200) colorClass = 'tiempo-warn';
+            if (tiempo > 500) colorClass = 'tiempo-bad';
+
+            // Limpiamos la URL para que no salga "http://localhost..."
+            const urlLimpia = url.replace(API_URL, '');
+            const horaActual = new Date().toLocaleTimeString();
+
+            row.innerHTML = `
+                <td>${horaActual}</td>
+                <td>${metodo}</td>
+                <td>${urlLimpia}</td>
+                <td>${estado}</td>
+                <td class="${colorClass}">${tiempo} ms</td>
+            `;
+
+            // Insertar al principio
+            tbody.prepend(row);
+        }
+
+
+        // --- 3. CÓDIGO DE LA APP (Usando ahora 'hacerPeticion') ---
+
+        document.addEventListener('DOMContentLoaded', () => {
+            obtenerProfesores();
+            cargarAusencias();
+        });
+
+        async function obtenerProfesores() {
+            try {
+                // CAMBIO: Usamos hacerPeticion en vez de fetch
+                const res = await hacerPeticion(`${API_URL}/profesores`);
+                todosLosProfesores = await res.json();
+            } catch (e) { console.error("Error cargando profes"); }
+        }
+
+        document.getElementById('buscador').addEventListener('input', (e) => {
+            const texto = e.target.value.toLowerCase();
+            const tabla = document.getElementById('tabla-resultados');
+            const aviso = document.getElementById('aviso-busqueda');
+            tabla.innerHTML = '';
+
+            if (texto.length === 0) {
+                aviso.style.display = 'block';
                 return;
             }
+            aviso.style.display = 'none';
 
-            // Crear el objeto a enviar
-            const datos = {
-                profesor_id: idProfesor,
-                hora: horaVal,
-                tarea: tareaVal,
-                es_ausencia: ausenciaVal // enviará true o false
-            };
+            const filtrados = todosLosProfesores.filter(p => p.nombre.toLowerCase().includes(texto));
 
-            // Enviar al servidor
-            try {
-                const respuesta = await fetch(`${API_URL}/reportes`, {
-                    method: 'POST', // Importante: Método POST para guardar
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(datos)
-                });
+            filtrados.forEach(profe => {
+                const fila = document.createElement('tr');
+                fila.innerHTML = `
+                    <td style="font-weight:bold">${profe.nombre}</td>
+                    <td><input type="text" id="grupo-${profe.id}" placeholder="Ej: 2ºA"></td>
+                    <td>
+                        <div class="grupo-horas">
+                            <select id="ini-${profe.id}">
+                                <option value="1">1ª</option><option value="2">2ª</option>
+                                <option value="3">3ª</option><option value="4">4ª</option>
+                                <option value="5">5ª</option><option value="6">6ª</option>
+                            </select>
+                            <span> a </span>
+                            <select id="fin-${profe.id}">
+                                <option value="1">1ª</option><option value="2">2ª</option>
+                                <option value="3">3ª</option><option value="4">4ª</option>
+                                <option value="5">5ª</option><option value="6" selected>6ª</option>
+                            </select>
+                        </div>
+                        <label class="check-dia">
+                            <input type="checkbox" id="dia-${profe.id}" onchange="toggleDia(${profe.id})"> Día completo
+                        </label>
+                    </td>
+                    <td><input type="text" id="tarea-${profe.id}" placeholder="Tarea..."></td>
+                    <td><button class="btn-guardar" onclick="enviarReporte(${profe.id})">Guardar</button></td>
+                `;
+                tabla.appendChild(fila);
+            });
+        });
 
-                if(respuesta.ok) {
-                    alert(`✅ Datos guardados para el profesor ID ${idProfesor}`);
-                    // Opcional: Limpiar los campos después de enviar
-                    document.getElementById(`tarea-${idProfesor}`).value = '';
-                    document.getElementById(`ausencia-${idProfesor}`).checked = false;
-                } else {
-                    alert("❌ Error al guardar.");
-                }
-            } catch (e) {
-                console.error(e);
-                alert("Error de conexión");
+        function toggleDia(id) {
+            const check = document.getElementById(`dia-${id}`);
+            const selIni = document.getElementById(`ini-${id}`);
+            const selFin = document.getElementById(`fin-${id}`);
+            if (check.checked) {
+                selIni.disabled = true; selFin.disabled = true;
+                selIni.value = "1"; selFin.value = "6";
+            } else {
+                selIni.disabled = false; selFin.disabled = false;
             }
         }
 
-        // Iniciar carga
-        cargarProfesores();
+        async function enviarReporte(id) {
+            const grupo = document.getElementById(`grupo-${id}`).value;
+            const tarea = document.getElementById(`tarea-${id}`).value;
+            const diaCompleto = document.getElementById(`dia-${id}`).checked;
+
+            let horaInicio = diaCompleto ? 1 : parseInt(document.getElementById(`ini-${id}`).value);
+            let horaFin = diaCompleto ? 6 : parseInt(document.getElementById(`fin-${id}`).value);
+
+            if (horaInicio > horaFin) return alert("Horas incorrectas");
+
+            const datos = { profesor_id: id, grupo: grupo || 'Sin grupo', hora_inicio: horaInicio, hora_fin: horaFin, tarea: tarea, es_ausencia: true };
+
+            // CAMBIO: Usamos hacerPeticion
+            await hacerPeticion(`${API_URL}/reportes`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(datos)
+            });
+
+            document.getElementById(`tarea-${id}`).value = '';
+            document.getElementById(`grupo-${id}`).value = '';
+            document.getElementById(`dia-${id}`).checked = false;
+            toggleDia(id);
+            cargarAusencias();
+        }
+
+        async function cargarAusencias() {
+            // CAMBIO: Usamos hacerPeticion
+            const res = await hacerPeticion(`${API_URL}/historial`);
+            const datos = await res.json();
+
+            const tbody = document.getElementById('tabla-ausencias');
+            const mensaje = document.getElementById('mensaje-sin-ausencias');
+            tbody.innerHTML = '';
+
+            if (datos.length === 0) {
+                mensaje.style.display = 'block';
+            } else {
+                mensaje.style.display = 'none';
+                datos.forEach(item => {
+                    const fila = document.createElement('tr');
+                    let horarioTexto = (item.hora_inicio == 1 && item.hora_fin == 6) ? "📅 Día Completo" :
+                        (item.hora_inicio == item.hora_fin) ? `⏰ ${item.hora_inicio}ª Hora` :
+                            `⏰ ${item.hora_inicio}ª - ${item.hora_fin}ª Hora`;
+
+                    fila.innerHTML = `
+                        <td><strong>${item.nombre}</strong> <span class="badge-grupo">${item.grupo}</span><br><span class="badge-hora">${horarioTexto}</span></td>
+                        <td style="color:#555;">${item.tarea || 'Sin tarea'}</td>
+                        <td style="text-align:right;"><button class="btn-cancelar" onclick="cancelarAusencia(${item.id})">Borrar</button></td>
+                    `;
+                    tbody.appendChild(fila);
+                });
+            }
+        }
+
+        async function cancelarAusencia(idReporte) {
+            if (!confirm("¿Borrar?")) return;
+            // CAMBIO: Usamos hacerPeticion
+            await hacerPeticion(`${API_URL}/reportes/${idReporte}`, { method: 'DELETE' });
+            cargarAusencias();
+        }
     </script>
+
 </body>
+
 </html>

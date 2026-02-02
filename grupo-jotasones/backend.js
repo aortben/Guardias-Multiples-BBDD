@@ -3,15 +3,16 @@ const mysql = require('mysql2');
 const cors = require('cors');
 
 const app = express();
-app.use(cors()); // Permite peticiones desde tu HTML
+app.use(cors()); // Permite peticiones desde cualquier origen
 app.use(express.json()); // Permite recibir JSON
+app.use(express.static('.'));
 
 // --- CONFIGURACIÓN DE LA BASE DE DATOS ---
 const db = mysql.createConnection({
-    host: 'localhost',      // O la IP de tu servidor MySQL
-    user: 'rootG',           // Tu usuario de MySQL
-    password: 'root2025G',// Tu contraseña de MySQL
-    database: 'guardias'  // El nombre de tu base de datos
+    host: 'localhost',      // IP de tu MySQL (localhost si está en la misma máquina)
+    user: 'rootG',
+    password: 'root2025G',
+    database: 'guardias'
 });
 
 // Conectar a MySQL
@@ -23,40 +24,66 @@ db.connect(err => {
     console.log('¡Conectado a MySQL exitosamente!');
 });
 
-// --- TUS RUTAS (ENDPOINTS) ---
+// --- ENDPOINTS ---
 
-// Esta es la ruta que sustituirá a jsonplaceholder
+// GET /profesores
 app.get('/api/profesores', (req, res) => {
-    // Aquí escribes SQL puro
     const sql = 'SELECT * FROM profesores'; 
-    
     db.query(sql, (err, results) => {
-        if (err) {
-            // Si falla la BD, avisamos al frontend
-            return res.status(500).json({ error: err.message }); 
-        }
-        // Si sale bien, enviamos los datos en formato JSON
+        if (err) return res.status(500).json({ error: err.message }); 
         res.json(results); 
     });
 });
-// NUEVA RUTA: Para guardar una guardia/ausencia (Método POST)
+
+// POST /reportes
 app.post('/api/reportes', (req, res) => {
-    // Recibimos los datos que envía el frontend
-    const { profesor_id, hora, tarea, es_ausencia } = req.body;
+    const { profesor_id, grupo, hora_inicio, hora_fin, tarea, es_ausencia } = req.body;
 
-    const sql = `INSERT INTO reportes_guardias (profesor_id, hora, tarea, es_ausencia) VALUES (?, ?, ?, ?)`;
-
-    // Usamos ? para evitar inyecciones SQL (seguridad básica)
-    db.query(sql, [profesor_id, hora, tarea, es_ausencia], (err, result) => {
-        if (err) {
-            console.error(err);
-            return res.status(500).json({ error: 'Error al guardar en BD' });
-        }
+    const sql = `
+        INSERT INTO reportes_guardias 
+        (profesor_id, grupo, hora_inicio, hora_fin, tarea, es_ausencia) 
+        VALUES (?, ?, ?, ?, ?, ?)
+    `;
+    db.query(sql, [profesor_id, grupo, hora_inicio, hora_fin, tarea, es_ausencia], (err, result) => {
+        if (err) return res.status(500).json({ error: 'Error al guardar en BD' });
         res.json({ mensaje: 'Guardia registrada correctamente', id: result.insertId });
     });
 });
 
-// Arrancar el servidor en el puerto 3000
-app.listen(3000, () => {
-    console.log('Tu API está corriendo en http://localhost:3000');
+// GET /historial
+app.get('/api/historial', (req, res) => {
+    const sql = `
+        SELECT 
+            r.id, 
+            p.nombre, 
+            p.apellidos,       -- Asegúrate de que la columna existe
+            r.grupo, 
+            r.hora_inicio, 
+            r.hora_fin, 
+            r.tarea, 
+            r.fecha 
+        FROM reportes_guardias r
+        JOIN profesores p ON r.profesor_id = p.id
+        WHERE r.es_ausencia = 1
+        ORDER BY r.fecha DESC
+    `;
+    db.query(sql, (err, results) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(results);
+    });
+});
+
+// DELETE /reportes/:id
+app.delete('/api/reportes/:id', (req, res) => {
+    const id = req.params.id;
+    const sql = 'DELETE FROM reportes_guardias WHERE id = ?';
+    db.query(sql, [id], (err, result) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ mensaje: 'Guardia cancelada' });
+    });
+});
+
+app.listen(3000, '0.0.0.0', () => {
+    console.log('Servidor corriendo en http://0.0.0.0:3000');
+    console.log('Accesible desde la red local en http://172.22.0.195:3000');
 });

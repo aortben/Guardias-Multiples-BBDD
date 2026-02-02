@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listado de Ausencias</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background-color: #f9f9f9; }
+        .header { display: flex; justify-content: space-between; align-items: center; }
+        a { text-decoration: none; color: #007bff; font-weight: bold; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #dc3545; color: white; } /* Rojo para indicar alertas/ausencias */
+        tr:nth-child(even) { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h2>🚨 Profesores Ausentes (Guardias)</h2>
+        <a href="index.html">&larr; Volver a Panel de Control</a>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Profesor</th>
+                <th>Hora</th>
+                <th>Tarea Asignada</th>
+                <th>Fecha Reporte</th>
+            </tr>
+        </thead>
+        <tbody id="tabla-ausencias">
+            </tbody>
+    </table>
+    <p id="mensaje-vacio" style="display:none; text-align:center;">No hay ausencias registradas.</p>
+
+    <script>
+        const API_URL = 'http://localhost:3000/api/historial';
+
+        async function cargarAusencias() {
+            try {
+                const res = await fetch(API_URL);
+                const ausencias = await res.json();
+                
+                const tbody = document.getElementById('tabla-ausencias');
+                
+                if (ausencias.length === 0) {
+                    document.getElementById('mensaje-vacio').style.display = 'block';
+                    return;
+                }
+
+                ausencias.forEach(item => {
+                    const fila = document.createElement('tr');
+                    
+                    // Formatear la fecha para que se vea bonita (opcional)
+                    const fechaFormat = new Date(item.fecha).toLocaleString();
+
+                    fila.innerHTML = `
+                        <td style="font-weight:bold;">${item.nombre}</td>
+                        <td>${item.hora}ª Hora</td>
+                        <td>${item.tarea || '<i>Sin tarea especificada</i>'}</td>
+                        <td style="font-size: 0.9em; color: #666;">${fechaFormat}</td>
+                    `;
+                    
+                    tbody.appendChild(fila);
+                });
+
+            } catch (error) {
+                console.error("Error cargando historial:", error);
+                alert("Error conectando con el servidor");
+            }
+        }
+
+        // Cargar al abrir la página
+        cargarAusencias();
+    </script>
+
+</body>
+</html>
