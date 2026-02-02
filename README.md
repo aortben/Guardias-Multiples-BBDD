@@ -1,1 +1,1 @@
-# proyectp-grupal-pablo
+# proyecto-grupal-pablo
