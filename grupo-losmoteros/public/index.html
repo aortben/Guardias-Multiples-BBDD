@@ -104,16 +104,14 @@
             </div>
 
             <div class="metrics-panel">
-                <div class="metric-row">
-                    <span class="metric-label">Procesos Asíncronos (Fetch):</span>
-                    <span class="metric-value" id="metricAsync">0 ms</span>
+                <div style="margin-bottom: 5px; font-weight: bold; border-bottom: 1px solid #444; padding-bottom: 5px;">
+                    Registro de Procesos
                 </div>
-                <div class="metric-row">
-                    <span class="metric-label">Procesos Síncronos (DOM):</span>
-                    <span class="metric-value" id="metricSync">0 ms</span>
+                <div id="metricsLogContainer" style="max-height: 200px; overflow-y: auto; margin-bottom: 5px; font-size: 0.75rem;">
+                    <div style="color: #666; font-style: italic;">Esperando actividad...</div>
                 </div>
                 <div class="metric-row" style="margin-top:5px; border-top:1px solid #444; padding-top:5px;">
-                    <span class="metric-label">Total Cliente:</span>
+                    <span class="metric-label">Total Operación:</span>
                     <span class="metric-value" id="metricTotal">0 ms</span>
                 </div>
                 <div style="font-size: 0.7rem; color: #666; margin-top: 5px;">

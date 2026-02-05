@@ -18,10 +18,34 @@ const domElements = {
     inputFecha: document.getElementById('inputFecha'),
     loadingOverlay: document.getElementById('loadingOverlay'),
     // Métricas
-    metricAsync: document.getElementById('metricAsync'),
-    metricSync: document.getElementById('metricSync'),
+    metricsLogContainer: document.getElementById('metricsLogContainer'),
     metricTotal: document.getElementById('metricTotal')
 };
+
+function logProcess(type, detail, timeMs) {
+    const row = document.createElement('div');
+    row.style.marginBottom = '4px';
+    row.style.paddingBottom = '4px';
+    row.style.borderBottom = '1px dashed #333';
+    
+    let color = '#fff';
+    if (type.includes('Fetch')) color = '#4da6ff'; 
+    if (type.includes('DOM')) color = '#ffb366';   
+    
+    row.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="color:${color}; font-weight:bold;">${type}</span>
+            <span style="color:#00ff9d;">${timeMs} ms</span>
+        </div>
+        <div style="color:#888; font-size:0.7rem;">${detail}</div>
+    `;
+    domElements.metricsLogContainer.appendChild(row);
+    domElements.metricsLogContainer.scrollTop = domElements.metricsLogContainer.scrollHeight;
+}
+
+function clearMetricsLog() {
+    domElements.metricsLogContainer.innerHTML = '';
+}
 
 const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
@@ -53,6 +77,9 @@ async function cargarDatos(fecha) {
     // INICIO TIMER GLOBAL
     const t0_Global = performance.now();
 
+    // Limpiar logs anteriores si es una carga principal
+    clearMetricsLog();
+
     // 1. Mostrar Spinner (Fuerza visualización mínima)
     domElements.loadingOverlay.classList.add('visible');
     
@@ -62,28 +89,28 @@ async function cargarDatos(fecha) {
     try {
         // INICIO TIMER ASÍNCRONO (Red)
         const t0_Async = performance.now();
+        const url = `${API_URL}/panel?diaSemana=${diaStr}&fecha=${fechaStr}`;
         
         // Ejecutamos Fetch y el Timer mínimo en paralelo
         const [res, _] = await Promise.all([
-            fetch(`${API_URL}/panel?diaSemana=${diaStr}&fecha=${fechaStr}`),
+            fetch(url),
             minLoadTime
         ]);
         
         const data = await res.json();
         const t1_Async = performance.now(); // FIN TIMER ASÍNCRONO
 
+        logProcess('Fetch (GET)', url.replace(API_URL, '/api'), (t1_Async - t0_Async).toFixed(2));
+
         // INICIO TIMER SÍNCRONO (DOM Render)
         const t0_Sync = performance.now();
         renderizarTabla(data.guardias, data.ausencias);
         const t1_Sync = performance.now(); // FIN TIMER SÍNCRONO
 
-        // Actualizar Métricas en Pantalla
-        const timeAsync = (t1_Async - t0_Async).toFixed(2);
-        const timeSync = (t1_Sync - t0_Sync).toFixed(2);
-        const timeTotal = (performance.now() - t0_Global).toFixed(2);
+        logProcess('Síncrono (DOM)', 'Renderizado Tabla Guardias', (t1_Sync - t0_Sync).toFixed(2));
 
-        domElements.metricAsync.innerText = `${timeAsync} ms`;
-        domElements.metricSync.innerText = `${timeSync} ms`;
+        // Actualizar Métricas en Pantalla
+        const timeTotal = (performance.now() - t0_Global).toFixed(2);
         domElements.metricTotal.innerText = `${timeTotal} ms`;
 
         // Colorear métricas según rendimiento
@@ -91,6 +118,7 @@ async function cargarDatos(fecha) {
 
     } catch (error) {
         console.error("Error cargando datos:", error);
+        logProcess('Error', error.message, 0);
     } finally {
         // Ocultar Spinner
         domElements.loadingOverlay.classList.remove('visible');
@@ -220,12 +248,22 @@ async function abrirModal() {
 
     if (profesoresCache.length === 0) {
         try {
+            const t0 = performance.now();
             const res = await fetch(`${API_URL}/profesores`);
             profesoresCache = await res.json();
+            const t1 = performance.now();
+            
+            logProcess('Fetch (GET)', '/api/profesores', (t1 - t0).toFixed(2));
+
+            const t0_DOM = performance.now();
             domElements.selectProfesor.innerHTML = '<option value="">Selecciona profesor...</option>';
             profesoresCache.forEach(p => {
                 domElements.selectProfesor.innerHTML += `<option value="${p._id}">${p.apellidos}, ${p.nombre}</option>`;
             });
+            const t1_DOM = performance.now();
+            
+            logProcess('Síncrono (DOM)', 'Render Select Profesores', (t1_DOM - t0_DOM).toFixed(2));
+
         } catch(e) { console.error("Error profes:", e); }
     }
 }
@@ -246,11 +284,16 @@ document.getElementById('formAusencia').addEventListener('submit', async (e) => 
     };
 
     try {
+        const t0 = performance.now();
         await fetch(`${API_URL}/ausencias`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(nuevaAusencia)
         });
+        const t1 = performance.now();
+
+        logProcess('Fetch (POST)', '/api/ausencias', (t1 - t0).toFixed(2));
+
         cerrarModal();
         e.target.reset();
         mostrarToast("Ausencia guardada");
