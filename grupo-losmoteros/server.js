@@ -95,8 +95,18 @@ mongoose.connect(process.env.MONGO_URI || "mongodb://localhost:27017/guardiasDB"
   })
   .catch(err => console.error(err));
 
+let connectedUsers = 0;
+
 io.on("connection", (socket) => {
-  console.log("👤 Cliente conectado");
+  connectedUsers++;
+  console.log("👤 Cliente conectado. Total:", connectedUsers);
+  io.emit("usuarios-conectados", connectedUsers);
+
+  socket.on("disconnect", () => {
+    connectedUsers--;
+    console.log("👤 Cliente desconectado. Total:", connectedUsers);
+    io.emit("usuarios-conectados", connectedUsers);
+  });
 });
 
 // --- 3. SEED DE DATOS ---
@@ -175,6 +185,13 @@ app.post("/api/ausencias", async (req, res) => {
     const nuevaAusencia = new Ausencia(req.body);
     await nuevaAusencia.save();
     res.json({ msg: "Ok" });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.delete("/api/ausencias/:id", async (req, res) => {
+  try {
+    await Ausencia.findByIdAndDelete(req.params.id);
+    res.json({ msg: "Ausencia eliminada" });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
