@@ -54,13 +54,12 @@
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* Estilo para Guardia Ausente */
+        /* Estilo para Guardia Asignado a Cubrir (antes Ausente) */
         .profesor-tag.ausente {
-            background-color: #ffe5e5;
-            color: #d32f2f;
-            text-decoration: line-through;
-            border: 1px dashed #d32f2f;
-            opacity: 0.7;
+            background-color: #fff7ed; /* Naranja muy suave */
+            color: #c2410c; /* Naranja oscuro */
+            border: 1px solid #fdba74;
+            opacity: 1; /* Restaurar opacidad */
         }
         .profesor-tag.disponible {
             background-color: #e3fcef;
@@ -91,42 +90,6 @@
 
     <main class="main-layout">
         
-        <aside class="sidebar">
-            <div class="calendar-card">
-                <div class="calendar-header">
-                    <h3 id="currentMonth">Mes</h3>
-                    <div class="calendar-nav">
-                        <button id="prevMonth"><i class="ph ph-caret-left"></i></button>
-                        <button id="nextMonth"><i class="ph ph-caret-right"></i></button>
-                    </div>
-                </div>
-                <div class="calendar-grid" id="calendarGrid"></div>
-            </div>
-
-            <div class="metrics-panel">
-                <div class="metric-row">
-                    <span class="metric-label">Procesos Asíncronos (Fetch):</span>
-                    <span class="metric-value" id="metricAsync">0 ms</span>
-                </div>
-                <div class="metric-row">
-                    <span class="metric-label">Procesos Síncronos (DOM):</span>
-                    <span class="metric-value" id="metricSync">0 ms</span>
-                </div>
-                <div class="metric-row" style="margin-top:5px; border-top:1px solid #444; padding-top:5px;">
-                    <span class="metric-label">Total Cliente:</span>
-                    <span class="metric-value" id="metricTotal">0 ms</span>
-                </div>
-                <div style="font-size: 0.7rem; color: #666; margin-top: 5px;">
-                    *Ver terminal Node.js para tiempos de servidor.
-                </div>
-            </div>
-
-            <button class="btn-primary-lg" style="margin-top: 20px;" onclick="abrirModal()">
-                <i class="ph-bold ph-plus"></i>
-                Comunicar Ausencia
-            </button>
-        </aside>
-
         <section class="content-area">
             <header class="content-header">
                 <div>
@@ -139,6 +102,11 @@
                 </div>
             </header>
 
+            <button class="btn-primary-lg" style="margin-top: 10px;" onclick="abrirModal()">
+                <i class="ph-bold ph-plus"></i>
+                Comunicar Ausencia
+            </button>
+            
             <div class="table-container">
                 <div id="loadingOverlay" class="loading-overlay">
                     <div class="spinner-circle"></div>
@@ -158,6 +126,67 @@
                 </table>
             </div>
         </section>
+
+        <aside class="sidebar">
+            <div class="sidebar-toggle-btn" onclick="toggleSidebar()">
+                <span class="collapsed-text"><i class="ph-bold ph-funnel"></i>Filtros</span>
+                <span class="expanded-text"><i class="ph-bold ph-chart-bar"></i> Estadísticas</span>
+                <i class="ph-bold ph-caret-down" id="sidebarToggleIcon"></i>
+            </div>
+
+            <div class="sidebar-content" id="sidebarContent">
+                <div class="calendar-card">
+                    <div class="calendar-header">
+                        <h3 id="currentMonth">Mes</h3>
+                        <div class="calendar-nav">
+                            <button id="prevMonth"><i class="ph ph-caret-left"></i></button>
+                            <button id="nextMonth"><i class="ph ph-caret-right"></i></button>
+                        </div>
+                    </div>
+                    <div class="calendar-grid" id="calendarGrid"></div>
+                </div>
+
+                <div class="metrics-panel">
+                    <div class="metric-row">
+                        <span class="metric-label">Total Operación:</span>
+                        <span class="metric-value" id="metricTotal">0 ms</span>
+                    </div>
+                    <div id="metricsLogContainer" style="max-height: 200px; overflow-y: auto; margin-top: 10px; border-top: 1px dashed #333; padding-top: 5px;">
+                         <div style="color: #666; font-style: italic;">Esperando actividad...</div>
+                    </div>
+                </div>
+                
+                <!-- Nuevo Panel de Estadísticas -->
+                <div class="stats-panel">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <i class="ph-fill ph-users-three stat-icon users-icon"></i>
+                            <span class="stat-title">Usuarios</span>
+                        </div>
+                        <div class="stat-body">
+                            <div id="usersConnectedContainer" class="users-grid">
+                                <!-- Iconos se inyectan aquí -->
+                            </div>
+                            <div class="stat-count-label"><span id="usersCountText">0</span> en línea</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <i class="ph-fill ph-chalkboard-teacher stat-icon teacher-icon"></i>
+                            <span class="stat-title">Profesores</span>
+                        </div>
+                        <div class="stat-body">
+                            <div class="stat-big-number" id="totalProfesores">0</div>
+                            <div class="stat-subtitle">Registrados</div>
+                        </div>
+                    </div>
+                </div>
+
+                
+            </div>
+            
+        </aside>
 
     </main>
 
@@ -216,6 +245,27 @@
             </form>
         </div>
     </div>
+
+    <!-- Modal Confirmación -->
+    <div id="modalConfirmacion" class="modal-overlay">
+        <div class="modal-card" style="max-width: 400px;">
+            <div class="modal-header">
+                <h2 style="color: var(--danger-text);"><i class="ph-bold ph-warning-circle"></i> Confirmar</h2>
+                <button class="btn-close" onclick="cerrarModalConfirmacion()"><i class="ph ph-x"></i></button>
+            </div>
+            <div class="modal-body" style="display:block;">
+                <p style="margin:0; color:var(--text-muted); line-height:1.5;">
+                    ¿Estás seguro de que deseas eliminar esta ausencia? Esta acción no se puede deshacer.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" onclick="cerrarModalConfirmacion()">Cancelar</button>
+                <button type="button" class="btn-danger" onclick="confirmarBorrado()">Eliminar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Logs Removed -->
 
     <div id="toast" class="toast">
         <i class="ph-fill ph-check-circle"></i>

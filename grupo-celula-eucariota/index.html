@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="control-panel">
+      <label>📅 Selecciona Día:</label>
+      <select id="selDia" onchange="cargarDatos()"></select>
+      <span id="latencyStats" class="latency-display" style="display: none"
+        >⏱️ -- ms</span
+      >
+    </div>
+
+    <table id="mainTable">
+      <thead>
+        <tr>
+          <th class="col-izq">Horario & Guardias Disponibles</th>
+          <th class="col-der">Ausencias</th>
+        </tr>
+      </thead>
+      <tbody id="tbody">
+        <tr>
+          <td
+            colspan="2"
+            style="text-align: center; padding: 40px; color: #888"
+          >
+            Iniciando sistema...
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <script src="script.js"></script>
+  </body>
+</html>
