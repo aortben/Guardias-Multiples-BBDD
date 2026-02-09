@@ -1,2 +1,3 @@
 usuario: rootG
 contraseña: root2025G
+ip: 172.22.0.174

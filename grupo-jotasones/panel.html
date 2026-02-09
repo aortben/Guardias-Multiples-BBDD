@@ -1,384 +1,335 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
-    <meta charset="UTF-8">
-    <title>Panel de Guardias</title>
+<meta charset="UTF-8">
+<title>Panel de Guardias</title>
 
-    <style>
-        :root {
-            --azul: #2563eb;
-            --gris: #64748b;
-            --fondo: #f8fafc;
-            --borde: #e2e8f0;
-            --verde: #16a34a;
-            --rojo: #dc2626;
-        }
+<style>
+:root{
+    --azul:#2563eb;
+    --gris:#64748b;
+    --fondo:#f8fafc;
+    --borde:#e2e8f0;
+    --verde:#16a34a;
+    --verde-fondo:#dcfce7;
+    --rojo:#dc2626;
+    --rojo-fondo:#fee2e2;
+}
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: system-ui
-        }
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui}
 
-        body {
-            background: var(--fondo);
-            padding: 20px;
-        }
+body{
+    background:var(--fondo);
+    padding:20px;
+}
 
-        h1 {
-            text-align: center;
-            color: var(--azul)
-        }
+h1{text-align:center;color:var(--azul)}
+h2{text-align:center;color:var(--gris);margin-bottom:14px}
 
-        h2 {
-            text-align: center;
-            color: var(--gris);
-            margin-bottom: 14px
-        }
+button{
+    padding:8px 12px;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    font-size:14px;
+}
 
-        button {
-            padding: 8px 12px;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 14px;
-        }
+.btn-principal{background:var(--azul);color:white}
+.btn-secundario{background:#e0e7ff;color:var(--azul)}
+.btn-peligro{background:#fee2e2;color:var(--rojo)}
 
-        .btn-principal {
-            background: var(--azul);
-            color: white
-        }
+.panel{
+    background:white;
+    padding:14px;
+    border-radius:14px;
+    box-shadow:0 6px 16px rgba(0,0,0,.08);
+}
 
-        .btn-secundario {
-            background: #e0e7ff;
-            color: var(--azul)
-        }
+.franja{
+    display:grid;
+    grid-template-columns: 1fr 2fr;
+    gap:16px;
+    padding:14px;
+    border-radius:14px;
+    margin-bottom:14px;
+}
 
-        .btn-peligro {
-            background: #fee2e2;
-            color: var(--rojo)
-        }
+.franja:nth-child(even){
+    background:#f1f5f9;
+}
 
-        .panel {
-            background: white;
-            padding: 14px;
-            border-radius: 14px;
-            box-shadow: 0 6px 16px rgba(0, 0, 0, .08);
-        }
+.bloque-titulo{
+    font-weight:600;
+    margin-bottom:10px;
+    color:var(--gris);
+}
 
-        .franja {
-            display: grid;
-            grid-template-columns: 1fr 2fr 1fr;
-            gap: 16px;
-            padding: 12px;
-            border-radius: 14px;
-            margin-bottom: 14px;
-        }
+.ausencia{
+    border-radius:12px;
+    padding:10px;
+    margin-bottom:8px;
+    border:1px solid var(--borde);
+}
 
-        .franja:nth-child(even) {
-            background: #f1f5f9
-        }
+.cubierta{
+    background:var(--verde-fondo);
+    border-color:#86efac;
+}
 
-        .ausencia {
-            border: 1px solid var(--borde);
-            padding: 10px;
-            border-radius: 12px;
-            margin-bottom: 8px;
-        }
+.pendiente{
+    background:var(--rojo-fondo);
+    border-color:#fecaca;
+}
 
-        .cubierta {
-            background: #d1fae5
-        }
+.form-ausencia{
+    display:none;
+    margin:20px 0;
+}
 
-        .pendiente {
-            background: #fee2e2
-        }
+.form-group{margin-bottom:10px}
 
-        .form-ausencia {
-            display: none;
-            margin: 20px 0;
-        }
+input,select{
+    width:100%;
+    padding:8px;
+    border-radius:8px;
+    border:1px solid var(--borde);
+}
 
-        .form-group {
-            margin-bottom: 10px
-        }
-
-        input,
-        select {
-            width: 100%;
-            padding: 8px;
-            border-radius: 8px;
-            border: 1px solid var(--borde);
-        }
-
-        #menuTiempos {
-            background: white;
-            padding: 12px;
-            border-radius: 14px;
-            margin: 16px 0;
-            font-size: 13px;
-            color: var(--gris);
-        }
-
-        .toast {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--verde);
-            color: white;
-            padding: 12px 20px;
-            border-radius: 12px;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, .2);
-            z-index: 9999;
-        }
-    </style>
+.toast{
+    position:fixed;
+    top:20px;
+    left:50%;
+    transform:translateX(-50%);
+    background:var(--verde);
+    color:white;
+    padding:12px 20px;
+    border-radius:12px;
+    box-shadow:0 10px 20px rgba(0,0,0,.2);
+    z-index:9999;
+}
+</style>
 </head>
 
 <body>
 
-    <h1>Panel de Guardias</h1>
-    <h2>Fecha: <span id="fechaMostrada"></span></h2>
+<h1>Panel de Guardias</h1>
+<h2>Fecha: <span id="fechaMostrada"></span></h2>
 
-    <div id="menuTiempos">
-        <b>Tiempos de carga</b>
-        <div id="listaTiempos"></div>
+<button class="btn-principal" onclick="toggleForm()">➕ Registrar ausencia</button>
+
+<!-- FORMULARIO -->
+<div id="formAusencia" class="panel form-ausencia">
+    <h3>Registrar ausencia</h3>
+
+    <div class="form-group">
+        <label>Profesor</label>
+        <select id="profesorAusente"></select>
     </div>
 
-    <button class="btn-principal" onclick="toggleForm()">➕ Registrar ausencia</button>
-
-    <!-- FORMULARIO AUSENCIA -->
-    <div id="formAusencia" class="panel form-ausencia">
-        <h3>Registrar ausencia</h3>
-
-        <div class="form-group">
-            <label>Profesor</label>
-            <select id="profesorAusente"></select>
-        </div>
-
-        <div class="form-group">
-            <label>Grupo</label>
-            <select id="grupoAusente"></select>
-        </div>
-
-        <div class="form-group">
-            <label>Hora inicio</label>
-            <select id="horaInicio"></select>
-        </div>
-
-        <div class="form-group">
-            <label>Hora fin</label>
-            <select id="horaFin"></select>
-        </div>
-
-        <div class="form-group">
-            <label>Tarea para el alumnado</label>
-            <input id="tareaAusencia">
-        </div>
-
-        <button class="btn-principal" onclick="crearAusencia()">Guardar ausencia</button>
+    <div class="form-group">
+        <label>Grupo</label>
+        <select id="grupoAusente"></select>
     </div>
 
-    <div id="panelHoras"></div>
+    <div class="form-group">
+        <label>Hora inicio</label>
+        <select id="horaInicio"></select>
+    </div>
 
-    <script>
-        const API = location.origin + "/api";
-        const fecha = new Date().toISOString().split('T')[0];
-        fechaMostrada.textContent = fecha;
+    <div class="form-group">
+        <label>Hora fin</label>
+        <select id="horaFin"></select>
+    </div>
 
-        let ultimaHoraCreada = null;
-        let ausenciaSeleccionada = null;
+    <div class="form-group">
+        <label>Tarea</label>
+        <input id="tareaAusencia">
+    </div>
 
-        // ---------- TIEMPOS ----------
-        function limpiarTiempos() {
-            listaTiempos.innerHTML = '';
-        }
+    <button class="btn-principal" onclick="crearAusencia()">Guardar ausencia</button>
+</div>
 
-        async function medir(nombre, fn) {
-            const t0 = performance.now();
-            await fn();
-            const t1 = performance.now();
-            listaTiempos.innerHTML += `<div>${nombre}: ${Math.round(t1 - t0)} ms</div>`;
-        }
+<br>
 
-        // ---------- UTIL ----------
-        function toast(txt) {
-            const t = document.createElement('div');
-            t.className = 'toast';
-            t.textContent = txt;
-            document.body.appendChild(t);
-            setTimeout(() => t.remove(), 2500);
-        }
+<div id="panelHoras"></div>
 
-        function toggleForm() {
-            formAusencia.style.display =
-                formAusencia.style.display === 'block' ? 'none' : 'block';
-        }
+<script>
+const API = location.origin + "/api";
+const fecha = new Date().toISOString().split('T')[0];
+fechaMostrada.textContent = fecha;
 
-        // ---------- AUSENCIAS ----------
-        async function crearAusencia() {
-            await medir('Crear ausencia', async () => {
-                await fetch(API + '/reportes', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        profesor_id: profesorAusente.value,
-                        grupo_id: grupoAusente.value,
-                        hora_inicio: horaInicio.value,
-                        hora_fin: horaFin.value,
-                        tarea: tareaAusencia.value,
-                        fecha
-                    })
-                });
-            });
+let ultimaHoraCreada = null;
+let ausenciaSeleccionada = null;
 
-            ultimaHoraCreada = horaInicio.value;
-            formAusencia.style.display = 'none';
-            toast('✅ Ausencia registrada');
-            cargarPanel();
-        }
+function toast(txt){
+    const t=document.createElement('div');
+    t.className='toast';
+    t.textContent=txt;
+    document.body.appendChild(t);
+    setTimeout(()=>t.remove(),2500);
+}
 
-        async function borrarAusencia(id) {
-            if (!confirm('¿Seguro que quieres eliminar esta ausencia?')) return;
+function toggleForm(){
+    formAusencia.style.display =
+        formAusencia.style.display === 'block' ? 'none' : 'block';
+}
 
-            await medir('Borrar ausencia', async () => {
-                await fetch(API + '/reportes/' + id, { method: 'DELETE' });
-            });
+// ---------- AUSENCIAS ----------
+async function crearAusencia(){
+    await fetch(API+'/reportes',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+            profesor_id:profesorAusente.value,
+            grupo_id:grupoAusente.value,
+            hora_inicio:horaInicio.value,
+            hora_fin:horaFin.value,
+            tarea:tareaAusencia.value,
+            fecha
+        })
+    });
 
-            toast('🗑️ Ausencia eliminada');
-            cargarPanel();
-        }
+    ultimaHoraCreada = horaInicio.value;
+    formAusencia.style.display='none';
+    toast('✅ Ausencia registrada');
+    cargarPanel();
+}
 
-        // ---------- GUARDIAS ----------
-        async function seleccionarAusencia(id, hora) {
-            ausenciaSeleccionada = { id, hora };
+async function borrarAusencia(id){
+    if(!confirm('¿Eliminar ausencia?')) return;
+    await fetch(API+'/reportes/'+id,{method:'DELETE'});
+    cargarPanel();
+}
 
-            await medir('Cargar disponibles', async () => {
-                const d = await fetch(
-                    API + `/profesores-disponibles?hora=${hora}&fecha=${fecha}`
-                ).then(r => r.json());
+// ---------- GUARDIAS ----------
+async function seleccionarAusencia(id,hora){
+    ausenciaSeleccionada={id,hora};
 
-                document.getElementById('guardia' + hora).innerHTML = `
-            <select id="profesorGuardia">
-                ${d.map(p => `<option value="${p.id}">
-                    ${p.nombre} ${p.apellidos}
-                </option>`).join('')}
-            </select>
-            <button class="btn-principal" onclick="asignarGuardia()">
-                Asignar guardia a la ausencia
-            </button>
-        `;
-            });
-        }
+    const d = await fetch(API+`/profesores-disponibles?hora=${hora}&fecha=${fecha}`)
+        .then(r=>r.json());
 
-        async function asignarGuardia() {
-            await medir('Asignar guardia', async () => {
-                await fetch(API + '/guardias', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        reporte_id: ausenciaSeleccionada.id,
-                        profesor_guardia_id: profesorGuardia.value,
-                        hora: ausenciaSeleccionada.hora,
-                        fecha
-                    })
-                });
-            });
+    document.getElementById('selector'+hora).innerHTML=`
+        <select id="profesorGuardia">
+            ${d.map(p=>`<option value="${p.id}">
+                ${p.nombre} ${p.apellidos}
+            </option>`).join('')}
+        </select>
+        <button class="btn-principal" onclick="asignarGuardia()">
+            Asignar guardia
+        </button>
+    `;
+}
 
-            toast('🛡️ Guardia registrada');
-            cargarPanel();
-        }
+async function asignarGuardia(){
+    await fetch(API+'/guardias',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+            reporte_id:ausenciaSeleccionada.id,
+            profesor_guardia_id:profesorGuardia.value,
+            hora:ausenciaSeleccionada.hora,
+            fecha
+        })
+    });
 
-        // ---------- PANEL ----------
-        async function cargarPanel() {
-            limpiarTiempos();
+    toast('🛡️ Guardia asignada');
+    cargarPanel();
+}
 
-            let data = [];
+// ---------- PANEL ----------
+async function cargarPanel(){
 
-            await medir('Cargar ausencias', async () => {
-                data = await fetch(API + `/panel?fecha=${fecha}`).then(r => r.json());
-            });
+    const data = await fetch(API+`/panel?fecha=${fecha}`).then(r=>r.json());
+    panelHoras.innerHTML='';
 
-            panelHoras.innerHTML = '';
+    for(let h=1;h<=6;h++){
 
-            for (let h = 1; h <= 6; h++) {
-                let disp = [];
+        const aus = data.filter(a=>a.hora_inicio==h);
 
-                await medir(`Disponibles ${h}ª`, async () => {
-                    disp = await fetch(
-                        API + `/profesores-disponibles?hora=${h}&fecha=${fecha}`
-                    ).then(r => r.json());
-                });
+        const guardiasHora = aus
+            .filter(a=>a.nombre_guardia)
+            .map(a=>`${a.nombre_guardia} ${a.apellidos_guardia}`);
 
-                const aus = data.filter(a => a.hora_inicio == h);
+        panelHoras.innerHTML += `
+        <div class="franja">
 
-                panelHoras.innerHTML += `
-        <div class="franja" id="hora${h}">
+            <!-- IZQUIERDA -->
             <div class="panel">
-                <b>${h}ª hora · Disponibles</b><br>
-                ${disp.map(p => `${p.nombre} ${p.apellidos}`).join('<br>') || '—'}
+                <div class="bloque-titulo">${h}ª hora · Profesores de guardia</div>
+                ${guardiasHora.length
+                    ? guardiasHora.join('<br>')
+                    : '—'
+                }
             </div>
 
+            <!-- DERECHA -->
             <div class="panel">
-                <b>${h}ª hora · Ausencias</b><br><br>
-                ${aus.map(a => `
-                    <div class="ausencia ${a.nombre_guardia ? 'cubierta' : 'pendiente'}">
+                <div class="bloque-titulo">${h}ª hora · Ausencias</div>
+
+                ${aus.map(a=>`
+                    <div class="ausencia ${a.nombre_guardia?'cubierta':'pendiente'}">
+
                         <b>${a.nombre_profesor} ${a.apellidos_profesor}</b><br>
                         <b>Grupo:</b> ${a.grupo}<br>
                         <b>Tarea:</b> ${a.tarea || '—'}<br>
-                        ${a.nombre_guardia
-                        ? `Cubierta por ${a.nombre_guardia} ${a.apellidos_guardia}`
-                        : 'Sin cubrir'
-                    }<br>
-                        ${!a.nombre_guardia
-                        ? `<button class="btn-secundario"
+
+                        ${
+                            a.nombre_guardia
+                            ? `<b>Guardia:</b> ${a.nombre_guardia} ${a.apellidos_guardia}`
+                            : 'Sin cubrir'
+                        }
+
+                        <br><br>
+
+                        ${
+                            !a.nombre_guardia
+                            ? `<button class="btn-secundario"
                                 onclick="seleccionarAusencia(${a.id},${h})">
-                                Asignar guardia a la ausencia
-                               </button>`
-                        : ''
-                    }
+                                Asignar guardia
+                               </button>
+                               <div id="selector${h}"></div>`
+                            : ''
+                        }
+
                         <button class="btn-peligro"
-                            onclick="borrarAusencia(${a.id})">Eliminar</button>
+                            onclick="borrarAusencia(${a.id})">
+                            Eliminar
+                        </button>
+
                     </div>
                 `).join('') || '—'}
             </div>
 
-            <div class="panel" id="guardia${h}">
-                <b>${h}ª hora · Guardia</b><br>—
-            </div>
         </div>`;
-            }
+    }
 
-            if (ultimaHoraCreada) {
-                document.getElementById('hora' + ultimaHoraCreada)
-                    .scrollIntoView({ behavior: 'smooth' });
-                ultimaHoraCreada = null;
-            }
-        }
+    if(ultimaHoraCreada){
+        document.getElementById('hora'+ultimaHoraCreada)
+            ?.scrollIntoView({behavior:'smooth'});
+        ultimaHoraCreada=null;
+    }
+}
 
-        // ---------- INIT ----------
-        (async () => {
-            const profesores = await fetch(API + '/profesores').then(r => r.json());
-            profesorAusente.innerHTML = profesores.map(
-                p => `<option value="${p.id}">${p.nombre} ${p.apellidos}</option>`
-            ).join('');
+// ---------- INIT ----------
+(async ()=>{
+    const profesores = await fetch(API+'/profesores').then(r=>r.json());
+    profesorAusente.innerHTML =
+        profesores.map(p=>`<option value="${p.id}">
+            ${p.nombre} ${p.apellidos}
+        </option>`).join('');
 
-            const grupos = await fetch(API + '/grupos').then(r => r.json());
-            grupoAusente.innerHTML = grupos.map(
-                g => `<option value="${g.id}">${g.nombre}</option>`
-            ).join('');
+    const grupos = await fetch(API+'/grupos').then(r=>r.json());
+    grupoAusente.innerHTML =
+        grupos.map(g=>`<option value="${g.id}">${g.nombre}</option>`).join('');
 
-            for (let h = 1; h <= 6; h++) {
-                horaInicio.innerHTML += `<option value="${h}">${h}ª</option>`;
-                horaFin.innerHTML += `<option value="${h}">${h}ª</option>`;
-            }
+    for(let h=1;h<=6;h++){
+        horaInicio.innerHTML+=`<option value="${h}">${h}ª</option>`;
+        horaFin.innerHTML+=`<option value="${h}">${h}ª</option>`;
+    }
 
-            cargarPanel();
-        })();
-    </script>
+    cargarPanel();
+})();
+</script>
 
 </body>
-
 </html>
