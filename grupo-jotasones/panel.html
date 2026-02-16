@@ -625,11 +625,8 @@
                 <div class="subtitle">Centro de Guardias — IES Alixar</div>
             </div>
         </div>
-        <div class="topbar-links">
-            <a href="/ia" target="_blank">📊 Grupo IA</a>
-            <a href="/celula" target="_blank">🧬 Grupo Célula</a>
-        </div>
     </div>
+
 
     <!-- MAIN LAYOUT -->
     <div class="layout">
@@ -638,7 +635,7 @@
         <div class="main-panel">
             <!-- Controls -->
             <div class="controls">
-                <input type="date" id="datePicker">
+                <input type="date" id="datePicker" onchange="sincronizar()">
                 <button class="btn btn-sync" id="btnSync" onclick="sincronizar()">🔄 Sincronizar</button>
                 <button class="btn btn-new" onclick="abrirModal()">➕ Nueva Ausencia</button>
                 <div class="resumen-badges" id="resumenBadges"></div>

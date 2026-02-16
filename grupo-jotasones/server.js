@@ -104,19 +104,90 @@ async function fetchConTiempo(url, opciones = {}, source = 'externo') {
 }
 
 // ========================================================
-//  API: PROFESORES
+//  API: PROFESORES (agregados de TODOS los grupos)
 // ========================================================
 app.get('/api/profesores', async (req, res) => {
+    const todosNombres = new Map(); // nombre_completo -> {id, nombre, apellidos, origen}
+    let nextId = 100;
+
+    // Helper para añadir si no existe
+    const agregar = (nombre, apellidos, origen) => {
+        const full = `${nombre} ${apellidos}`.trim();
+        if (full && !todosNombres.has(full.toLowerCase())) {
+            todosNombres.set(full.toLowerCase(), {
+                id: nextId++, nombre, apellidos, origen
+            });
+        }
+    };
+
+    // 1. Respaldo local (siempre disponible)
+    PROFESORES_RESPALDO.forEach(p => agregar(p.nombre, p.apellidos, 'Jotasones'));
+
+    // 2. Jotasones API remota (devuelve {success, data: [{id, nombre, apellidos}]})
     try {
         const { response } = await fetchConTiempo(`${JOTASONES_API_URL}/profesores`, {}, 'jotasones-api');
-        if (!response.ok) throw new Error("API error");
-        const data = await response.json();
-        if (Array.isArray(data) && data.length > 0) return res.json(data);
-        res.json(PROFESORES_RESPALDO);
-    } catch (e) {
-        console.log("⚠️ API Profesores fallida → usando respaldo local");
-        res.json(PROFESORES_RESPALDO);
-    }
+        if (response.ok) {
+            const data = await response.json();
+            const lista = data.data || data.profesores || (Array.isArray(data) ? data : []);
+            lista.forEach(p => agregar(p.nombre, p.apellidos || '', 'Jotasones'));
+        }
+    } catch (e) { /* sin acceso */ }
+
+    // 3. Moteros
+    try {
+        const { response } = await fetchConTiempo(`${MOTEROS_URL}/api/profesores`, {}, 'moteros');
+        if (response.ok) {
+            const data = await response.json();
+            if (Array.isArray(data)) data.forEach(p => agregar(p.nombre, p.apellidos || '', 'Moteros'));
+        }
+    } catch (e) { /* sin acceso */ }
+
+    // 4. Célula (Google Apps Script) - extraer profesores de guardias
+    try {
+        const { response } = await fetchConTiempo(`${CELULA_SCRIPT_URL}?dia=Lunes`, {}, 'celula');
+        if (response.ok) {
+            const d = await response.json();
+            (d.guardias || []).forEach(g => {
+                (g.profesores || []).forEach(nombre => {
+                    const partes = nombre.trim().split(' ');
+                    agregar(partes[0] || nombre, partes.slice(1).join(' '), 'Célula');
+                });
+            });
+            (d.faltas || []).forEach(f => {
+                if (f.profesor) {
+                    const partes = f.profesor.trim().split(' ');
+                    agregar(partes[0] || f.profesor, partes.slice(1).join(' '), 'Célula');
+                }
+            });
+        }
+    } catch (e) { /* sin acceso */ }
+
+    // 5. Duoia (CSV) - extraer nombres de la columna profesor
+    try {
+        const { response } = await fetchConTiempo(DUOIA_CSV_URL, {}, 'duoia');
+        if (response.ok) {
+            const txt = await response.text();
+            const filas = txt.split('\n').map(l => l.trim());
+            const h = filas[0].toLowerCase().split(',');
+            const idxProf = h.indexOf('profesor');
+            if (idxProf >= 0) {
+                const vistos = new Set();
+                filas.slice(1).forEach(l => {
+                    const c = l.split(',');
+                    const nombre = (c[idxProf] || '').trim();
+                    if (nombre && !vistos.has(nombre.toLowerCase())) {
+                        vistos.add(nombre.toLowerCase());
+                        const partes = nombre.split(' ');
+                        agregar(partes[0], partes.slice(1).join(' '), 'Duoia');
+                    }
+                });
+            }
+        }
+    } catch (e) { /* sin acceso */ }
+
+    const resultado = Array.from(todosNombres.values());
+    console.log(`👥 Profesores agregados: ${resultado.length} (de múltiples fuentes)`);
+    res.json(resultado);
 });
 
 // ========================================================
@@ -236,27 +307,29 @@ app.get('/api/panel', async (req, res) => {
     console.log(`\n🔎 SINCRONIZACIÓN: ${fecha} (${diaSemana})`);
     console.log('─'.repeat(50));
 
-    // A. JOTASONES (API remota con respaldo)
+    // A. JOTASONES (API remota — devuelve {success, data: [{profesor_nombre, grupo_nombre, hora_inicio, ...}]})
     const jotasonesPromise = fetchConTiempo(
         `${JOTASONES_API_URL}/ausencias?fecha=${fecha}`, {}, 'jotasones-api'
     )
         .then(async ({ response }) => {
             const data = await response.json();
-            const lista = Array.isArray(data) ? data : (data.ausencias || []);
+            // La API real devuelve {success: true, data: [...], count: N}
+            const lista = data.data || data.ausencias || (Array.isArray(data) ? data : []);
+            console.log(`  ✅ Jotasones API: ${lista.length} ausencias`);
             return lista.map(a => ({
                 id: a.id || 'j-' + Math.random().toString(36).substr(2, 6),
                 origen: 'Jotasones (API)',
-                profesor: a.profesor || 'Docente',
-                grupo: a.grupo || '?',
-                hora_inicio: parseInt(a.horaInicio || a.hora || 1),
-                hora_fin: parseInt(a.horaFin || a.hora || 1),
+                profesor: a.profesor_nombre || a.profesor || 'Docente',
+                grupo: a.grupo_nombre || a.grupo || '?',
+                hora_inicio: parseInt(a.hora_inicio || a.horaInicio || a.hora || 1),
+                hora_fin: parseInt(a.hora_fin || a.horaFin || a.hora || 1),
                 tarea: a.tarea || 'Sin tarea',
                 es_externo: false,
                 guardia_asignada: a.guardiaNombre || null
             }));
         })
-        .catch(() => {
-            console.log('  ⚠️ Jotasones API no accesible');
+        .catch((e) => {
+            console.log('  ⚠️ Jotasones API no accesible:', e.message);
             return [];
         });
 
@@ -296,7 +369,7 @@ app.get('/api/panel', async (req, res) => {
                 grupo: f.aula || '?',
                 hora_inicio: parseInt(f.hora) || 1,
                 hora_fin: parseInt(f.hora) || 1,
-                tarea: 'Ver web original',
+                tarea: 'Sin tarea',
                 es_externo: true,
                 guardia_asignada: null
             }));

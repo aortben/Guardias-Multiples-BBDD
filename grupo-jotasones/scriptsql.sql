@@ -2,6 +2,10 @@ DROP DATABASE IF EXISTS guardias;
 CREATE DATABASE guardias;
 USE guardias;
 
+-- =====================
+-- TABLAS
+-- =====================
+
 CREATE TABLE profesores (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(50),
@@ -38,6 +42,7 @@ CREATE TABLE guardias (
 -- =====================
 -- PROFESORES
 -- =====================
+
 INSERT INTO profesores (nombre,apellidos) VALUES
 ('María','Fernández Ruiz'),
 ('Laura','Pérez Gómez'),
@@ -51,13 +56,15 @@ INSERT INTO profesores (nombre,apellidos) VALUES
 -- =====================
 -- GRUPOS
 -- =====================
+
 INSERT INTO grupos (nombre) VALUES
 ('1ºA'),('1ºB'),('2ºA'),('2ºB'),
 ('3ºA'),('3ºB'),('4ºA'),('4ºB');
 
 -- =====================
--- REPORTES FEBRERO 2026
+-- AUSENCIAS FEBRERO 2026
 -- =====================
+
 INSERT INTO reportes (profesor_id, grupo_id, hora_inicio, hora_fin, tarea, fecha) VALUES
 (1,1,1,2,'Trabajo en Moodle','2026-02-01'),
 (2,2,2,3,'Ejercicios tema 4','2026-02-02'),
@@ -67,7 +74,18 @@ INSERT INTO reportes (profesor_id, grupo_id, hora_inicio, hora_fin, tarea, fecha
 (6,6,4,5,'Trabajo en grupo','2026-02-06'),
 (7,7,1,2,'Ejercicios página 32','2026-02-07'),
 (8,8,3,4,'Resumen del tema','2026-02-08'),
+
+-- DIA ACTUAL (MUCHAS AUSENCIAS PARA PRUEBAS)
 (1,2,2,3,'Actividad Moodle','2026-02-09'),
+(5,3,1,1,'Ejercicios página 45','2026-02-09'),
+(6,4,1,1,'Trabajo en Moodle','2026-02-09'),
+(7,5,2,2,'Lectura comprensiva','2026-02-09'),
+(8,6,2,2,'Actividad práctica','2026-02-09'),
+(2,7,3,3,'Problemas tema 6','2026-02-09'),
+(3,8,4,4,'Resumen del tema','2026-02-09'),
+(4,1,5,5,'Ficha de repaso','2026-02-09'),
+
+-- RESTO DEL MES
 (2,3,3,4,'Problemas unidad 5','2026-02-10'),
 (3,4,1,2,'Lectura y preguntas','2026-02-11'),
 (4,5,2,3,'Ejercicios cuaderno','2026-02-12'),
@@ -89,8 +107,9 @@ INSERT INTO reportes (profesor_id, grupo_id, hora_inicio, hora_fin, tarea, fecha
 (4,7,1,2,'Repaso final','2026-02-28');
 
 -- =====================
--- GUARDIAS FEBRERO 2026
+-- GUARDIAS
 -- =====================
+
 INSERT INTO guardias (reporte_id, profesor_guardia_id, hora, fecha) VALUES
 (1,2,2,'2026-02-01'),
 (2,3,3,'2026-02-02'),
@@ -100,23 +119,32 @@ INSERT INTO guardias (reporte_id, profesor_guardia_id, hora, fecha) VALUES
 (6,7,5,'2026-02-06'),
 (7,8,2,'2026-02-07'),
 (8,1,4,'2026-02-08'),
+
+-- DIA 09 (VARIAS GUARDIAS)
 (9,3,3,'2026-02-09'),
-(10,4,4,'2026-02-10'),
-(11,5,2,'2026-02-11'),
-(12,6,3,'2026-02-12'),
-(13,7,5,'2026-02-13'),
-(14,8,2,'2026-02-14'),
-(15,1,4,'2026-02-15'),
-(16,2,3,'2026-02-16'),
-(17,4,2,'2026-02-17'),
-(18,5,4,'2026-02-18'),
-(19,6,3,'2026-02-19'),
-(20,7,5,'2026-02-20'),
-(21,8,2,'2026-02-21'),
-(22,1,4,'2026-02-22'),
-(23,2,3,'2026-02-23'),
-(24,3,2,'2026-02-24'),
-(25,5,4,'2026-02-25'),
-(26,6,3,'2026-02-26'),
-(27,7,5,'2026-02-27'),
-(28,8,2,'2026-02-28');
+(10,1,1,'2026-02-09'),
+(11,2,1,'2026-02-09'),
+(12,3,2,'2026-02-09'),
+(14,4,3,'2026-02-09'),
+(15,5,4,'2026-02-09'),
+
+-- RESTO DEL MES
+(16,4,4,'2026-02-10'),
+(17,5,2,'2026-02-11'),
+(18,6,3,'2026-02-12'),
+(19,7,5,'2026-02-13'),
+(20,8,2,'2026-02-14'),
+(21,1,4,'2026-02-15'),
+(22,2,3,'2026-02-16'),
+(23,4,2,'2026-02-17'),
+(24,5,4,'2026-02-18'),
+(25,6,3,'2026-02-19'),
+(26,7,5,'2026-02-20'),
+(27,8,2,'2026-02-21'),
+(28,1,4,'2026-02-22'),
+(29,2,3,'2026-02-23'),
+(30,3,2,'2026-02-24'),
+(31,5,4,'2026-02-25'),
+(32,6,3,'2026-02-26'),
+(33,7,5,'2026-02-27'),
+(34,8,2,'2026-02-28');
