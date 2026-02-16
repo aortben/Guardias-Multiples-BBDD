@@ -353,6 +353,25 @@
             background: var(--green-bg);
             color: var(--green);
             font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-x {
+            background: none;
+            border: none;
+            color: var(--red);
+            cursor: pointer;
+            font-size: 0.8rem;
+            padding: 0 2px;
+            line-height: 1;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+        }
+
+        .btn-x:hover {
+            opacity: 1;
         }
 
         /* ===== SIDEBAR (TRÁFICO) ===== */
@@ -621,7 +640,7 @@
     <div class="topbar">
         <div class="topbar-left">
             <div>
-                <h1>🛡️ Panel Jotasones</h1>
+                <h1>Panel Jotasones</h1>
                 <div class="subtitle">Centro de Guardias — IES Alixar</div>
             </div>
         </div>
@@ -636,8 +655,8 @@
             <!-- Controls -->
             <div class="controls">
                 <input type="date" id="datePicker" onchange="sincronizar()">
-                <button class="btn btn-sync" id="btnSync" onclick="sincronizar()">🔄 Sincronizar</button>
-                <button class="btn btn-new" onclick="abrirModal()">➕ Nueva Ausencia</button>
+                <button class="btn btn-sync" id="btnSync" onclick="sincronizar()">Sincronizar</button>
+                <button class="btn btn-new" onclick="abrirModal()">+ Nueva Ausencia</button>
                 <div class="resumen-badges" id="resumenBadges"></div>
             </div>
 
@@ -651,7 +670,7 @@
         <!-- RIGHT: TRAFFIC SIDEBAR -->
         <div class="sidebar">
             <div class="sidebar-header">
-                <span>📡 Monitor de Tráfico</span>
+                <span>Monitor de Tráfico</span>
                 <span class="count" id="trafficCount">0</span>
             </div>
             <div class="traffic-list" id="trafficList">
@@ -666,7 +685,7 @@
     <!-- MODAL: NUEVA AUSENCIA -->
     <div class="modal-overlay" id="modalAusencia">
         <div class="modal-card">
-            <h3>📝 Registrar Nueva Ausencia</h3>
+            <h3>Registrar Nueva Ausencia</h3>
             <div class="field">
                 <label>Profesor</label>
                 <select id="selProfesor">
@@ -703,7 +722,7 @@
     <!-- MODAL: ASIGNAR GUARDIA -->
     <div class="modal-overlay" id="modalGuardia">
         <div class="modal-card">
-            <h3>👮 Asignar Guardia</h3>
+            <h3>Asignar Guardia</h3>
             <p id="guardiaInfo" style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 14px;"></p>
             <div class="field">
                 <label>Profesor de Guardia</label>
@@ -824,8 +843,8 @@
             const timeline = document.getElementById('timeline');
 
             btn.classList.add('loading');
-            btn.textContent = '⏳ Sincronizando...';
-            timeline.innerHTML = '<div class="empty-slot" style="padding: 40px;">⏳ Conectando con los 4 grupos...</div>';
+            btn.textContent = 'Sincronizando...';
+            timeline.innerHTML = '<div class="empty-slot" style="padding: 40px;">Conectando con los 4 grupos...</div>';
 
             try {
                 const res = await fetchLog(`${API}/panel?fecha=${fecha}`);
@@ -842,8 +861,8 @@
                     <span class="resumen-badge" style="background:var(--orange-bg); color:var(--orange);">Moteros: ${resumen.moteros || 0}</span>
                     <span class="resumen-badge" style="background:var(--green-bg); color:var(--green);">Célula: ${resumen.celula || 0}</span>
                     <span class="resumen-badge" style="background:var(--purple-bg); color:var(--purple);">Duoia: ${resumen.duoia || 0}</span>
-                    <span class="resumen-badge" style="background:var(--accent-glow); color:var(--accent);">Local: ${resumen.local || 0}</span>
                 `;
+
 
                 // Also fetch server-side traffic log
                 try {
@@ -863,13 +882,13 @@
                 } catch (e) { /* ignore */ }
 
                 renderTimeline();
-                showToast(`✅ Sincronizado: ${datosPanel.length} ausencias de ${Object.keys(resumen).length - 1} fuentes`);
+                showToast(`Sincronizado: ${datosPanel.length} ausencias de ${Object.keys(resumen).length - 1} fuentes`);
             } catch (e) {
-                timeline.innerHTML = `<div class="empty-slot" style="padding: 40px; color: var(--red);">❌ Error: ${e.message}</div>`;
+                timeline.innerHTML = `<div class="empty-slot" style="padding: 40px; color: var(--red);">Error: ${e.message}</div>`;
             }
 
             btn.classList.remove('loading');
-            btn.textContent = '🔄 Sincronizar';
+            btn.textContent = 'Sincronizar';
         }
 
         // ===== RENDER TIMELINE =====
@@ -882,7 +901,7 @@
                 let cartas = '';
 
                 if (eventos.length === 0) {
-                    cartas = '<div class="empty-slot">✅ Sin incidencias</div>';
+                    cartas = '<div class="empty-slot">Sin incidencias</div>';
                 } else {
                     eventos.forEach(e => {
                         let claseBorde = '', claseBadge = '', labelOrigen = e.origen;
@@ -892,21 +911,21 @@
                         else if (e.origen.includes('Duoia') || e.origen.includes('IA')) { claseBorde = 'origen-duoia'; claseBadge = 'badge-duoia'; }
 
                         const guardiaHtml = e.guardia_asignada
-                            ? `<span class="guardia-tag">👮 ${e.guardia_asignada}</span>`
-                            : `<button class="btn-sm" onclick="abrirGuardia('${e.id}', '${e.profesor}', ${h})">🎯 Asignar Guardia</button>`;
+                            ? `<span class="guardia-tag">${e.guardia_asignada} <button class="btn-x" onclick="quitarGuardia('${e.id}', '${e.guardia_id || ''}')" title="Quitar guardia">✕</button></span>`
+                            : `<button class="btn-sm" onclick="abrirGuardia('${e.id}', '${e.profesor}', ${h})">Asignar Guardia</button>`;
 
                         const deleteHtml = !e.es_externo
-                            ? `<button class="btn-sm btn-danger" onclick="eliminarAusencia('${e.id}')">🗑️ Eliminar</button>`
+                            ? `<button class="btn-sm btn-danger" onclick="eliminarAusencia('${e.id}')">Eliminar</button>`
                             : '';
 
                         cartas += `
                             <div class="card ${claseBorde}">
                                 <div class="card-top">
-                                    <span class="card-profesor">👤 ${e.profesor}</span>
+                                    <span class="card-profesor">${e.profesor}</span>
                                     <span class="card-badge ${claseBadge}">${labelOrigen}</span>
                                 </div>
-                                <div class="card-meta">🏫 ${e.grupo || '?'}</div>
-                                <div class="card-tarea">📝 ${e.tarea || 'Sin tarea'}</div>
+                                <div class="card-meta">${e.grupo || '?'}</div>
+                                <div class="card-tarea">${e.tarea || 'Sin tarea'}</div>
                                 <div class="card-actions">
                                     ${guardiaHtml}
                                     ${deleteHtml}
@@ -953,10 +972,10 @@
                 });
                 cerrarModal();
                 document.getElementById('inpTarea').value = '';
-                showToast('✅ Ausencia registrada correctamente');
+                showToast('Ausencia registrada correctamente');
                 sincronizar();
             } catch (e) {
-                showToast('❌ Error al guardar ausencia');
+                showToast('Error al guardar ausencia');
             }
         }
 
@@ -965,10 +984,10 @@
             if (!confirm('¿Eliminar esta ausencia?')) return;
             try {
                 await fetchLog(`${API}/ausencias/${id}`, { method: 'DELETE' });
-                showToast('🗑️ Ausencia eliminada');
+                showToast('Ausencia eliminada');
                 sincronizar();
             } catch (e) {
-                showToast('❌ Error al eliminar');
+                showToast('Error al eliminar');
             }
         }
 
@@ -990,7 +1009,7 @@
             const fecha = document.getElementById('datePicker').value;
 
             try {
-                await fetchLog(API + '/guardias', {
+                const res = await fetchLog(API + '/guardias', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -1000,11 +1019,52 @@
                         fecha
                     })
                 });
+                const data = await res.json();
+
+                // Actualizar localmente sin re-sincronizar
+                const aus = datosPanel.find(a => String(a.id) === String(ausenciaParaGuardia.id));
+                if (aus) {
+                    aus.guardia_asignada = profesorNombre;
+                    aus.guardia_id = data.guardia ? data.guardia.id : '';
+                }
+
                 cerrarModalGuardia();
-                showToast(`👮 Guardia asignada: ${profesorNombre}`);
-                sincronizar();
+                renderTimeline();
+                showToast(`Guardia asignada: ${profesorNombre}`);
             } catch (e) {
-                showToast('❌ Error al asignar guardia');
+                showToast('Error al asignar guardia');
+            }
+        }
+
+        async function quitarGuardia(ausenciaId, guardiaId) {
+            if (!guardiaId) {
+                // Si no tenemos guardiaId, buscar por ausencia_id
+                try {
+                    const res = await fetchLog(`${API}/panel?fecha=${document.getElementById('datePicker').value}`);
+                    const data = await res.json();
+                    const g = (data.guardias_asignadas || []).find(g => String(g.ausencia_id) === String(ausenciaId));
+                    if (g) guardiaId = g.id;
+                } catch (e) { /* ignore */ }
+            }
+            if (!guardiaId) {
+                showToast('No se pudo identificar la guardia');
+                return;
+            }
+
+            try {
+                await fetchLog(`${API}/guardias/${guardiaId}`, { method: 'DELETE' });
+
+                // Actualizar localmente
+                const aus = datosPanel.find(a => String(a.id) === String(ausenciaId));
+                if (aus) {
+                    aus.guardia_asignada = null;
+                    aus.guardia_id = null;
+                }
+
+                renderTimeline();
+                showToast('Guardia desasignada');
+            } catch (e) {
+                showToast('Error al quitar guardia');
             }
         }
 

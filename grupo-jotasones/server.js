@@ -417,21 +417,20 @@ app.get('/api/panel', async (req, res) => {
             jotasonesPromise, moterosPromise, celulaPromise, duoiaPromise
         ]);
 
-        // Filtrar ausencias locales por fecha
-        const locales = ausenciasLocales.filter(a => a.fecha === fecha);
-
-        // Juntar guardias asignadas
-        const todas = [...jotasones, ...moteros, ...celula, ...duoia, ...locales];
+        const todas = [...jotasones, ...moteros, ...celula, ...duoia];
 
         // Vincular guardias asignadas a ausencias externas
         guardiasAsignadas
             .filter(g => g.fecha === fecha)
             .forEach(g => {
-                const aus = todas.find(a => a.id === g.ausencia_id);
-                if (aus) aus.guardia_asignada = g.profesor_nombre;
+                const aus = todas.find(a => String(a.id) === String(g.ausencia_id));
+                if (aus) {
+                    aus.guardia_asignada = g.profesor_nombre;
+                    aus.guardia_id = g.id;
+                }
             });
 
-        console.log(`  📊 Resultados: Jotasones=${jotasones.length}, Moteros=${moteros.length}, Célula=${celula.length}, Duoia=${duoia.length}, Local=${locales.length}`);
+        console.log(`  📊 Resultados: Jotasones=${jotasones.length}, Moteros=${moteros.length}, Célula=${celula.length}, Duoia=${duoia.length}`);
         console.log('─'.repeat(50));
 
         res.json({
@@ -441,7 +440,6 @@ app.get('/api/panel', async (req, res) => {
                 moteros: moteros.length,
                 celula: celula.length,
                 duoia: duoia.length,
-                local: locales.length,
                 total: todas.length
             },
             guardias_asignadas: guardiasAsignadas.filter(g => g.fecha === fecha)
