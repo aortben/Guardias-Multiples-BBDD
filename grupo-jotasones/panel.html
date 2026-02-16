@@ -1,335 +1,1024 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-<meta charset="UTF-8">
-<title>Panel de Guardias</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Guardias - Jotasones</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f1117;
+            --surface: #1a1d27;
+            --surface2: #232734;
+            --border: #2e3347;
+            --text: #e4e7f1;
+            --text-dim: #8b90a5;
+            --accent: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.25);
+            --green: #10b981;
+            --green-bg: rgba(16, 185, 129, 0.12);
+            --red: #ef4444;
+            --red-bg: rgba(239, 68, 68, 0.12);
+            --orange: #f59e0b;
+            --orange-bg: rgba(245, 158, 11, 0.12);
+            --purple: #a855f7;
+            --purple-bg: rgba(168, 85, 247, 0.12);
+            --blue: #3b82f6;
+            --blue-bg: rgba(59, 130, 246, 0.12);
+            --radius: 12px;
+        }
 
-<style>
-:root{
-    --azul:#2563eb;
-    --gris:#64748b;
-    --fondo:#f8fafc;
-    --borde:#e2e8f0;
-    --verde:#16a34a;
-    --verde-fondo:#dcfce7;
-    --rojo:#dc2626;
-    --rojo-fondo:#fee2e2;
-}
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui}
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
 
-body{
-    background:var(--fondo);
-    padding:20px;
-}
+        /* ===== TOP BAR ===== */
+        .topbar {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(12px);
+        }
 
-h1{text-align:center;color:var(--azul)}
-h2{text-align:center;color:var(--gris);margin-bottom:14px}
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
 
-button{
-    padding:8px 12px;
-    border:none;
-    border-radius:10px;
-    cursor:pointer;
-    font-size:14px;
-}
+        .topbar-left h1 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), var(--purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
 
-.btn-principal{background:var(--azul);color:white}
-.btn-secundario{background:#e0e7ff;color:var(--azul)}
-.btn-peligro{background:#fee2e2;color:var(--rojo)}
+        .topbar-left .subtitle {
+            font-size: 0.78rem;
+            color: var(--text-dim);
+        }
 
-.panel{
-    background:white;
-    padding:14px;
-    border-radius:14px;
-    box-shadow:0 6px 16px rgba(0,0,0,.08);
-}
+        .topbar-links {
+            display: flex;
+            gap: 8px;
+        }
 
-.franja{
-    display:grid;
-    grid-template-columns: 1fr 2fr;
-    gap:16px;
-    padding:14px;
-    border-radius:14px;
-    margin-bottom:14px;
-}
+        .topbar-links a {
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 500;
+            padding: 6px 14px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
 
-.franja:nth-child(even){
-    background:#f1f5f9;
-}
+        .topbar-links a:hover {
+            color: var(--accent);
+            border-color: var(--accent);
+            background: var(--accent-glow);
+        }
 
-.bloque-titulo{
-    font-weight:600;
-    margin-bottom:10px;
-    color:var(--gris);
-}
+        /* ===== LAYOUT ===== */
+        .layout {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 0;
+            min-height: calc(100vh - 53px);
+        }
 
-.ausencia{
-    border-radius:12px;
-    padding:10px;
-    margin-bottom:8px;
-    border:1px solid var(--borde);
-}
+        .main-panel {
+            padding: 20px 24px;
+            overflow-y: auto;
+        }
 
-.cubierta{
-    background:var(--verde-fondo);
-    border-color:#86efac;
-}
+        /* ===== CONTROLS BAR ===== */
+        .controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
 
-.pendiente{
-    background:var(--rojo-fondo);
-    border-color:#fecaca;
-}
+        .controls input[type="date"] {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 9px 14px;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.9rem;
+        }
 
-.form-ausencia{
-    display:none;
-    margin:20px 0;
-}
+        .btn {
+            padding: 9px 18px;
+            border: none;
+            border-radius: 8px;
+            font-family: inherit;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
 
-.form-group{margin-bottom:10px}
+        .btn-sync {
+            background: linear-gradient(135deg, var(--accent), #818cf8);
+            color: white;
+            box-shadow: 0 4px 15px var(--accent-glow);
+        }
 
-input,select{
-    width:100%;
-    padding:8px;
-    border-radius:8px;
-    border:1px solid var(--borde);
-}
+        .btn-sync:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 25px var(--accent-glow);
+        }
 
-.toast{
-    position:fixed;
-    top:20px;
-    left:50%;
-    transform:translateX(-50%);
-    background:var(--verde);
-    color:white;
-    padding:12px 20px;
-    border-radius:12px;
-    box-shadow:0 10px 20px rgba(0,0,0,.2);
-    z-index:9999;
-}
-</style>
+        .btn-sync.loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .btn-new {
+            background: var(--green);
+            color: white;
+        }
+
+        .btn-new:hover {
+            background: #059669;
+        }
+
+        .resumen-badges {
+            display: flex;
+            gap: 6px;
+            margin-left: auto;
+            flex-wrap: wrap;
+        }
+
+        .resumen-badge {
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* ===== TIMELINE ===== */
+        .timeline {
+            display: grid;
+            gap: 16px;
+        }
+
+        .hora-row {
+            display: grid;
+            grid-template-columns: 56px 1fr;
+            gap: 12px;
+        }
+
+        .hora-label {
+            background: linear-gradient(180deg, var(--accent), #4f46e5);
+            color: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.95rem;
+            text-align: center;
+            box-shadow: 0 4px 12px var(--accent-glow);
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 10px;
+            min-height: 70px;
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .empty-slot {
+            color: var(--text-dim);
+            font-style: italic;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+        }
+
+        /* ===== CARD ===== */
+        .card {
+            background: var(--surface2);
+            border-radius: 10px;
+            padding: 14px;
+            border-left: 4px solid var(--border);
+            transition: transform 0.15s, box-shadow 0.15s;
+            position: relative;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .card.origen-jotasones {
+            border-left-color: var(--blue);
+        }
+
+        .card.origen-moteros {
+            border-left-color: var(--orange);
+        }
+
+        .card.origen-celula {
+            border-left-color: var(--green);
+        }
+
+        .card.origen-duoia {
+            border-left-color: var(--purple);
+        }
+
+        .card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+
+        .card-profesor {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .card-badge {
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            white-space: nowrap;
+        }
+
+        .badge-jotasones {
+            background: var(--blue-bg);
+            color: var(--blue);
+        }
+
+        .badge-moteros {
+            background: var(--orange-bg);
+            color: var(--orange);
+        }
+
+        .badge-celula {
+            background: var(--green-bg);
+            color: var(--green);
+        }
+
+        .badge-duoia {
+            background: var(--purple-bg);
+            color: var(--purple);
+        }
+
+        .card-meta {
+            font-size: 0.82rem;
+            color: var(--text-dim);
+            margin-bottom: 4px;
+        }
+
+        .card-tarea {
+            font-size: 0.82rem;
+            color: var(--text-dim);
+            margin-bottom: 10px;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .card-actions .btn-sm {
+            font-size: 0.72rem;
+            padding: 4px 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text-dim);
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 500;
+            transition: all 0.15s;
+        }
+
+        .card-actions .btn-sm:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .card-actions .btn-sm.btn-danger:hover {
+            border-color: var(--red);
+            color: var(--red);
+        }
+
+        .guardia-tag {
+            font-size: 0.75rem;
+            padding: 3px 8px;
+            border-radius: 6px;
+            background: var(--green-bg);
+            color: var(--green);
+            font-weight: 600;
+        }
+
+        /* ===== SIDEBAR (TRÁFICO) ===== */
+        .sidebar {
+            background: var(--surface);
+            border-left: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            padding: 16px 18px;
+            border-bottom: 1px solid var(--border);
+            font-weight: 700;
+            font-size: 0.9rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sidebar-header .count {
+            font-size: 0.72rem;
+            background: var(--accent-glow);
+            color: var(--accent);
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+        .traffic-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.72rem;
+        }
+
+        .traffic-entry {
+            padding: 6px 18px;
+            display: grid;
+            grid-template-columns: 50px 1fr 60px 50px;
+            gap: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            align-items: center;
+            transition: background 0.15s;
+        }
+
+        .traffic-entry:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .traffic-entry.new {
+            animation: flashNew 0.6s ease-out;
+        }
+
+        @keyframes flashNew {
+            from {
+                background: var(--accent-glow);
+            }
+
+            to {
+                background: transparent;
+            }
+        }
+
+        .traffic-method {
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .traffic-method.get {
+            color: var(--green);
+        }
+
+        .traffic-method.post {
+            color: var(--blue);
+        }
+
+        .traffic-method.delete {
+            color: var(--red);
+        }
+
+        .traffic-url {
+            color: var(--text-dim);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .traffic-time {
+            text-align: right;
+            font-weight: 600;
+        }
+
+        .traffic-time.fast {
+            color: var(--green);
+        }
+
+        .traffic-time.medium {
+            color: var(--orange);
+        }
+
+        .traffic-time.slow {
+            color: var(--red);
+        }
+
+        .traffic-status {
+            text-align: right;
+        }
+
+        .traffic-status.ok {
+            color: var(--green);
+        }
+
+        .traffic-status.fail {
+            color: var(--red);
+        }
+
+        /* ===== MODAL ===== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            width: 90%;
+            max-width: 440px;
+            padding: 24px;
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-card h3 {
+            font-size: 1.1rem;
+            margin-bottom: 18px;
+            background: linear-gradient(135deg, var(--accent), var(--purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .field {
+            margin-bottom: 14px;
+        }
+
+        .field label {
+            display: block;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--text-dim);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .field input,
+        .field select,
+        .field textarea {
+            width: 100%;
+            padding: 10px 12px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.9rem;
+            transition: border-color 0.2s;
+        }
+
+        .field input:focus,
+        .field select:focus,
+        .field textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        .field-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .field-row>.field {
+            flex: 1;
+        }
+
+        .modal-btns {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .modal-btns .btn {
+            flex: 1;
+            justify-content: center;
+        }
+
+        .btn-cancel {
+            background: var(--surface2);
+            color: var(--text-dim);
+            border: 1px solid var(--border);
+        }
+
+        /* ===== TOAST ===== */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 300;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* ===== SCROLLBAR ===== */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 900px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                max-height: 300px;
+                border-left: none;
+                border-top: 1px solid var(--border);
+            }
+        }
+    </style>
 </head>
 
 <body>
 
-<h1>Panel de Guardias</h1>
-<h2>Fecha: <span id="fechaMostrada"></span></h2>
-
-<button class="btn-principal" onclick="toggleForm()">➕ Registrar ausencia</button>
-
-<!-- FORMULARIO -->
-<div id="formAusencia" class="panel form-ausencia">
-    <h3>Registrar ausencia</h3>
-
-    <div class="form-group">
-        <label>Profesor</label>
-        <select id="profesorAusente"></select>
+    <!-- TOP BAR -->
+    <div class="topbar">
+        <div class="topbar-left">
+            <div>
+                <h1>🛡️ Panel Jotasones</h1>
+                <div class="subtitle">Centro de Guardias — IES Alixar</div>
+            </div>
+        </div>
+        <div class="topbar-links">
+            <a href="/ia" target="_blank">📊 Grupo IA</a>
+            <a href="/celula" target="_blank">🧬 Grupo Célula</a>
+        </div>
     </div>
 
-    <div class="form-group">
-        <label>Grupo</label>
-        <select id="grupoAusente"></select>
+    <!-- MAIN LAYOUT -->
+    <div class="layout">
+
+        <!-- LEFT: MAIN PANEL -->
+        <div class="main-panel">
+            <!-- Controls -->
+            <div class="controls">
+                <input type="date" id="datePicker">
+                <button class="btn btn-sync" id="btnSync" onclick="sincronizar()">🔄 Sincronizar</button>
+                <button class="btn btn-new" onclick="abrirModal()">➕ Nueva Ausencia</button>
+                <div class="resumen-badges" id="resumenBadges"></div>
+            </div>
+
+            <!-- Timeline -->
+            <div id="timeline" class="timeline">
+                <div class="empty-slot" style="padding: 40px;">Pulsa <strong>Sincronizar</strong> para cargar datos de
+                    los 4 grupos</div>
+            </div>
+        </div>
+
+        <!-- RIGHT: TRAFFIC SIDEBAR -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <span>📡 Monitor de Tráfico</span>
+                <span class="count" id="trafficCount">0</span>
+            </div>
+            <div class="traffic-list" id="trafficList">
+                <div
+                    style="padding: 20px; color: var(--text-dim); text-align: center; font-family: Inter, sans-serif; font-size: 0.82rem;">
+                    Esperando peticiones...
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="form-group">
-        <label>Hora inicio</label>
-        <select id="horaInicio"></select>
+    <!-- MODAL: NUEVA AUSENCIA -->
+    <div class="modal-overlay" id="modalAusencia">
+        <div class="modal-card">
+            <h3>📝 Registrar Nueva Ausencia</h3>
+            <div class="field">
+                <label>Profesor</label>
+                <select id="selProfesor">
+                    <option>Cargando...</option>
+                </select>
+            </div>
+            <div class="field">
+                <label>Grupo / Aula</label>
+                <select id="selGrupo">
+                    <option>Cargando...</option>
+                </select>
+            </div>
+            <div class="field-row">
+                <div class="field">
+                    <label>Hora Inicio</label>
+                    <select id="selHoraIni"></select>
+                </div>
+                <div class="field">
+                    <label>Hora Fin</label>
+                    <select id="selHoraFin"></select>
+                </div>
+            </div>
+            <div class="field">
+                <label>Tarea</label>
+                <input type="text" id="inpTarea" placeholder="Ej: Ejercicios Moodle tema 5">
+            </div>
+            <div class="modal-btns">
+                <button class="btn btn-cancel" onclick="cerrarModal()">Cancelar</button>
+                <button class="btn btn-sync" onclick="guardarAusencia()">Guardar</button>
+            </div>
+        </div>
     </div>
 
-    <div class="form-group">
-        <label>Hora fin</label>
-        <select id="horaFin"></select>
+    <!-- MODAL: ASIGNAR GUARDIA -->
+    <div class="modal-overlay" id="modalGuardia">
+        <div class="modal-card">
+            <h3>👮 Asignar Guardia</h3>
+            <p id="guardiaInfo" style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 14px;"></p>
+            <div class="field">
+                <label>Profesor de Guardia</label>
+                <select id="selProfesorGuardia">
+                    <option>Cargando...</option>
+                </select>
+            </div>
+            <div class="modal-btns">
+                <button class="btn btn-cancel" onclick="cerrarModalGuardia()">Cancelar</button>
+                <button class="btn btn-new" onclick="confirmarGuardia()">Asignar</button>
+            </div>
+        </div>
     </div>
 
-    <div class="form-group">
-        <label>Tarea</label>
-        <input id="tareaAusencia">
-    </div>
+    <!-- TOAST -->
+    <div class="toast" id="toast"></div>
 
-    <button class="btn-principal" onclick="crearAusencia()">Guardar ausencia</button>
-</div>
+    <script>
+        const API = '/api';
+        let datosPanel = [];
+        let profesores = [];
+        let grupos = [];
+        let guardias = [];
+        let ausenciaParaGuardia = null;
 
-<br>
+        // ===== INIT =====
+        window.onload = async () => {
+            document.getElementById('datePicker').valueAsDate = new Date();
+            await cargarDesplegables();
+            sincronizar();
+        };
 
-<div id="panelHoras"></div>
+        // ===== TRAFFIC MONITOR =====
+        let trafficEntries = [];
 
-<script>
-const API = location.origin + "/api";
-const fecha = new Date().toISOString().split('T')[0];
-fechaMostrada.textContent = fecha;
+        function logTraffic(method, url, timeMs, status) {
+            trafficEntries.unshift({ method, url, timeMs: Math.round(timeMs), status });
+            if (trafficEntries.length > 80) trafficEntries.pop();
+            renderTraffic();
+        }
 
-let ultimaHoraCreada = null;
-let ausenciaSeleccionada = null;
-
-function toast(txt){
-    const t=document.createElement('div');
-    t.className='toast';
-    t.textContent=txt;
-    document.body.appendChild(t);
-    setTimeout(()=>t.remove(),2500);
-}
-
-function toggleForm(){
-    formAusencia.style.display =
-        formAusencia.style.display === 'block' ? 'none' : 'block';
-}
-
-// ---------- AUSENCIAS ----------
-async function crearAusencia(){
-    await fetch(API+'/reportes',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({
-            profesor_id:profesorAusente.value,
-            grupo_id:grupoAusente.value,
-            hora_inicio:horaInicio.value,
-            hora_fin:horaFin.value,
-            tarea:tareaAusencia.value,
-            fecha
-        })
-    });
-
-    ultimaHoraCreada = horaInicio.value;
-    formAusencia.style.display='none';
-    toast('✅ Ausencia registrada');
-    cargarPanel();
-}
-
-async function borrarAusencia(id){
-    if(!confirm('¿Eliminar ausencia?')) return;
-    await fetch(API+'/reportes/'+id,{method:'DELETE'});
-    cargarPanel();
-}
-
-// ---------- GUARDIAS ----------
-async function seleccionarAusencia(id,hora){
-    ausenciaSeleccionada={id,hora};
-
-    const d = await fetch(API+`/profesores-disponibles?hora=${hora}&fecha=${fecha}`)
-        .then(r=>r.json());
-
-    document.getElementById('selector'+hora).innerHTML=`
-        <select id="profesorGuardia">
-            ${d.map(p=>`<option value="${p.id}">
-                ${p.nombre} ${p.apellidos}
-            </option>`).join('')}
-        </select>
-        <button class="btn-principal" onclick="asignarGuardia()">
-            Asignar guardia
-        </button>
-    `;
-}
-
-async function asignarGuardia(){
-    await fetch(API+'/guardias',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({
-            reporte_id:ausenciaSeleccionada.id,
-            profesor_guardia_id:profesorGuardia.value,
-            hora:ausenciaSeleccionada.hora,
-            fecha
-        })
-    });
-
-    toast('🛡️ Guardia asignada');
-    cargarPanel();
-}
-
-// ---------- PANEL ----------
-async function cargarPanel(){
-
-    const data = await fetch(API+`/panel?fecha=${fecha}`).then(r=>r.json());
-    panelHoras.innerHTML='';
-
-    for(let h=1;h<=6;h++){
-
-        const aus = data.filter(a=>a.hora_inicio==h);
-
-        const guardiasHora = aus
-            .filter(a=>a.nombre_guardia)
-            .map(a=>`${a.nombre_guardia} ${a.apellidos_guardia}`);
-
-        panelHoras.innerHTML += `
-        <div class="franja">
-
-            <!-- IZQUIERDA -->
-            <div class="panel">
-                <div class="bloque-titulo">${h}ª hora · Profesores de guardia</div>
-                ${guardiasHora.length
-                    ? guardiasHora.join('<br>')
-                    : '—'
+        function renderTraffic() {
+            const list = document.getElementById('trafficList');
+            document.getElementById('trafficCount').textContent = trafficEntries.length;
+            list.innerHTML = trafficEntries.map((e, i) => {
+                const methodClass = e.method.toLowerCase();
+                const timeClass = e.timeMs < 500 ? 'fast' : e.timeMs < 2000 ? 'medium' : 'slow';
+                const statusClass = (e.status >= 200 && e.status < 400) ? 'ok' : 'fail';
+                const statusText = e.status || 'ERR';
+                // Shorten URL for display
+                let shortUrl = e.url;
+                if (shortUrl.startsWith('http')) {
+                    try { shortUrl = new URL(shortUrl).pathname; } catch (ex) { }
                 }
-            </div>
+                return `<div class="traffic-entry ${i === 0 ? 'new' : ''}">
+                    <span class="traffic-method ${methodClass}">${e.method}</span>
+                    <span class="traffic-url" title="${e.url}">${shortUrl}</span>
+                    <span class="traffic-time ${timeClass}">${e.timeMs} ms</span>
+                    <span class="traffic-status ${statusClass}">${statusText}</span>
+                </div>`;
+            }).join('');
+        }
 
-            <!-- DERECHA -->
-            <div class="panel">
-                <div class="bloque-titulo">${h}ª hora · Ausencias</div>
+        // Wrapper: fetch with traffic logging
+        async function fetchLog(url, opts = {}) {
+            const method = opts.method || 'GET';
+            const start = performance.now();
+            try {
+                const res = await fetch(url, opts);
+                const elapsed = performance.now() - start;
+                logTraffic(method, url, elapsed, res.status);
+                return res;
+            } catch (e) {
+                const elapsed = performance.now() - start;
+                logTraffic(method, url, elapsed, 'ERR');
+                throw e;
+            }
+        }
 
-                ${aus.map(a=>`
-                    <div class="ausencia ${a.nombre_guardia?'cubierta':'pendiente'}">
+        // ===== CARGAR DESPLEGABLES =====
+        async function cargarDesplegables() {
+            try {
+                const [resP, resG] = await Promise.all([
+                    fetchLog(API + '/profesores'),
+                    fetchLog(API + '/grupos')
+                ]);
+                profesores = await resP.json();
+                grupos = await resG.json();
 
-                        <b>${a.nombre_profesor} ${a.apellidos_profesor}</b><br>
-                        <b>Grupo:</b> ${a.grupo}<br>
-                        <b>Tarea:</b> ${a.tarea || '—'}<br>
+                const selP = document.getElementById('selProfesor');
+                selP.innerHTML = profesores.map(p =>
+                    `<option value="${p.id}" data-nombre="${p.nombre} ${p.apellidos}">${p.nombre} ${p.apellidos}</option>`
+                ).join('');
 
-                        ${
-                            a.nombre_guardia
-                            ? `<b>Guardia:</b> ${a.nombre_guardia} ${a.apellidos_guardia}`
-                            : 'Sin cubrir'
+                const selG = document.getElementById('selGrupo');
+                selG.innerHTML = grupos.map(g =>
+                    `<option value="${g.id}" data-nombre="${g.nombre}">${g.nombre}</option>`
+                ).join('');
+
+                // Horas
+                let opts = '';
+                for (let i = 1; i <= 6; i++) opts += `<option value="${i}">${i}ª Hora</option>`;
+                document.getElementById('selHoraIni').innerHTML = opts;
+                document.getElementById('selHoraFin').innerHTML = opts;
+
+                // Profesor guardia select
+                const selPG = document.getElementById('selProfesorGuardia');
+                selPG.innerHTML = profesores.map(p =>
+                    `<option value="${p.nombre} ${p.apellidos}">${p.nombre} ${p.apellidos}</option>`
+                ).join('');
+            } catch (e) { console.error("Error cargando desplegables:", e); }
+        }
+
+        // ===== SINCRONIZAR =====
+        async function sincronizar() {
+            const fecha = document.getElementById('datePicker').value;
+            const btn = document.getElementById('btnSync');
+            const timeline = document.getElementById('timeline');
+
+            btn.classList.add('loading');
+            btn.textContent = '⏳ Sincronizando...';
+            timeline.innerHTML = '<div class="empty-slot" style="padding: 40px;">⏳ Conectando con los 4 grupos...</div>';
+
+            try {
+                const res = await fetchLog(`${API}/panel?fecha=${fecha}`);
+                const data = await res.json();
+
+                datosPanel = data.ausencias || [];
+                guardias = data.guardias_asignadas || [];
+                const resumen = data.resumen || {};
+
+                // Render summary badges
+                const badges = document.getElementById('resumenBadges');
+                badges.innerHTML = `
+                    <span class="resumen-badge" style="background:var(--blue-bg); color:var(--blue);">Jotasones: ${resumen.jotasones || 0}</span>
+                    <span class="resumen-badge" style="background:var(--orange-bg); color:var(--orange);">Moteros: ${resumen.moteros || 0}</span>
+                    <span class="resumen-badge" style="background:var(--green-bg); color:var(--green);">Célula: ${resumen.celula || 0}</span>
+                    <span class="resumen-badge" style="background:var(--purple-bg); color:var(--purple);">Duoia: ${resumen.duoia || 0}</span>
+                    <span class="resumen-badge" style="background:var(--accent-glow); color:var(--accent);">Local: ${resumen.local || 0}</span>
+                `;
+
+                // Also fetch server-side traffic log
+                try {
+                    const tRes = await fetchLog(API + '/trafico');
+                    const serverLogs = await tRes.json();
+                    // Merge server external fetch logs
+                    serverLogs.forEach(entry => {
+                        if (entry.source && entry.source !== 'gateway') {
+                            const exists = trafficEntries.some(t =>
+                                t.url === entry.url && Math.abs(t.timeMs - entry.timeMs) < 50
+                            );
+                            if (!exists) {
+                                logTraffic(entry.method, entry.url, entry.timeMs, entry.status);
+                            }
                         }
+                    });
+                } catch (e) { /* ignore */ }
 
-                        <br><br>
+                renderTimeline();
+                showToast(`✅ Sincronizado: ${datosPanel.length} ausencias de ${Object.keys(resumen).length - 1} fuentes`);
+            } catch (e) {
+                timeline.innerHTML = `<div class="empty-slot" style="padding: 40px; color: var(--red);">❌ Error: ${e.message}</div>`;
+            }
 
-                        ${
-                            !a.nombre_guardia
-                            ? `<button class="btn-secundario"
-                                onclick="seleccionarAusencia(${a.id},${h})">
-                                Asignar guardia
-                               </button>
-                               <div id="selector${h}"></div>`
-                            : ''
-                        }
+            btn.classList.remove('loading');
+            btn.textContent = '🔄 Sincronizar';
+        }
 
-                        <button class="btn-peligro"
-                            onclick="borrarAusencia(${a.id})">
-                            Eliminar
-                        </button>
+        // ===== RENDER TIMELINE =====
+        function renderTimeline() {
+            const timeline = document.getElementById('timeline');
+            let html = '';
 
-                    </div>
-                `).join('') || '—'}
-            </div>
+            for (let h = 1; h <= 6; h++) {
+                const eventos = datosPanel.filter(e => e.hora_inicio == h);
+                let cartas = '';
 
-        </div>`;
-    }
+                if (eventos.length === 0) {
+                    cartas = '<div class="empty-slot">✅ Sin incidencias</div>';
+                } else {
+                    eventos.forEach(e => {
+                        let claseBorde = '', claseBadge = '', labelOrigen = e.origen;
+                        if (e.origen.includes('Jotasones')) { claseBorde = 'origen-jotasones'; claseBadge = 'badge-jotasones'; }
+                        else if (e.origen.includes('Moteros')) { claseBorde = 'origen-moteros'; claseBadge = 'badge-moteros'; }
+                        else if (e.origen.includes('Célula')) { claseBorde = 'origen-celula'; claseBadge = 'badge-celula'; }
+                        else if (e.origen.includes('Duoia') || e.origen.includes('IA')) { claseBorde = 'origen-duoia'; claseBadge = 'badge-duoia'; }
 
-    if(ultimaHoraCreada){
-        document.getElementById('hora'+ultimaHoraCreada)
-            ?.scrollIntoView({behavior:'smooth'});
-        ultimaHoraCreada=null;
-    }
-}
+                        const guardiaHtml = e.guardia_asignada
+                            ? `<span class="guardia-tag">👮 ${e.guardia_asignada}</span>`
+                            : `<button class="btn-sm" onclick="abrirGuardia('${e.id}', '${e.profesor}', ${h})">🎯 Asignar Guardia</button>`;
 
-// ---------- INIT ----------
-(async ()=>{
-    const profesores = await fetch(API+'/profesores').then(r=>r.json());
-    profesorAusente.innerHTML =
-        profesores.map(p=>`<option value="${p.id}">
-            ${p.nombre} ${p.apellidos}
-        </option>`).join('');
+                        const deleteHtml = !e.es_externo
+                            ? `<button class="btn-sm btn-danger" onclick="eliminarAusencia('${e.id}')">🗑️ Eliminar</button>`
+                            : '';
 
-    const grupos = await fetch(API+'/grupos').then(r=>r.json());
-    grupoAusente.innerHTML =
-        grupos.map(g=>`<option value="${g.id}">${g.nombre}</option>`).join('');
+                        cartas += `
+                            <div class="card ${claseBorde}">
+                                <div class="card-top">
+                                    <span class="card-profesor">👤 ${e.profesor}</span>
+                                    <span class="card-badge ${claseBadge}">${labelOrigen}</span>
+                                </div>
+                                <div class="card-meta">🏫 ${e.grupo || '?'}</div>
+                                <div class="card-tarea">📝 ${e.tarea || 'Sin tarea'}</div>
+                                <div class="card-actions">
+                                    ${guardiaHtml}
+                                    ${deleteHtml}
+                                </div>
+                            </div>`;
+                    });
+                }
+                html += `<div class="hora-row">
+                    <div class="hora-label">${h}ª</div>
+                    <div class="cards-grid">${cartas}</div>
+                </div>`;
+            }
+            timeline.innerHTML = html;
+        }
 
-    for(let h=1;h<=6;h++){
-        horaInicio.innerHTML+=`<option value="${h}">${h}ª</option>`;
-        horaFin.innerHTML+=`<option value="${h}">${h}ª</option>`;
-    }
+        // ===== MODAL AUSENCIA =====
+        function abrirModal() {
+            document.getElementById('modalAusencia').style.display = 'flex';
+        }
+        function cerrarModal() {
+            document.getElementById('modalAusencia').style.display = 'none';
+        }
 
-    cargarPanel();
-})();
-</script>
+        async function guardarAusencia() {
+            const selP = document.getElementById('selProfesor');
+            const selG = document.getElementById('selGrupo');
+            const profesorNombre = selP.options[selP.selectedIndex].dataset.nombre;
+            const grupoNombre = selG.options[selG.selectedIndex].dataset.nombre;
 
+            const body = {
+                profesor: profesorNombre,
+                grupo: grupoNombre,
+                hora_inicio: document.getElementById('selHoraIni').value,
+                hora_fin: document.getElementById('selHoraFin').value,
+                tarea: document.getElementById('inpTarea').value || 'Sin tarea',
+                fecha: document.getElementById('datePicker').value
+            };
+
+            try {
+                await fetchLog(API + '/ausencias', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                cerrarModal();
+                document.getElementById('inpTarea').value = '';
+                showToast('✅ Ausencia registrada correctamente');
+                sincronizar();
+            } catch (e) {
+                showToast('❌ Error al guardar ausencia');
+            }
+        }
+
+        // ===== ELIMINAR AUSENCIA =====
+        async function eliminarAusencia(id) {
+            if (!confirm('¿Eliminar esta ausencia?')) return;
+            try {
+                await fetchLog(`${API}/ausencias/${id}`, { method: 'DELETE' });
+                showToast('🗑️ Ausencia eliminada');
+                sincronizar();
+            } catch (e) {
+                showToast('❌ Error al eliminar');
+            }
+        }
+
+        // ===== MODAL GUARDIA =====
+        function abrirGuardia(ausenciaId, profesorAusente, hora) {
+            ausenciaParaGuardia = { id: ausenciaId, hora };
+            document.getElementById('guardiaInfo').textContent =
+                `Cubrir ausencia de ${profesorAusente} en la ${hora}ª hora`;
+            document.getElementById('modalGuardia').style.display = 'flex';
+        }
+        function cerrarModalGuardia() {
+            document.getElementById('modalGuardia').style.display = 'none';
+            ausenciaParaGuardia = null;
+        }
+
+        async function confirmarGuardia() {
+            if (!ausenciaParaGuardia) return;
+            const profesorNombre = document.getElementById('selProfesorGuardia').value;
+            const fecha = document.getElementById('datePicker').value;
+
+            try {
+                await fetchLog(API + '/guardias', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        ausencia_id: ausenciaParaGuardia.id,
+                        profesor_nombre: profesorNombre,
+                        hora: ausenciaParaGuardia.hora,
+                        fecha
+                    })
+                });
+                cerrarModalGuardia();
+                showToast(`👮 Guardia asignada: ${profesorNombre}`);
+                sincronizar();
+            } catch (e) {
+                showToast('❌ Error al asignar guardia');
+            }
+        }
+
+        // ===== TOAST =====
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
+    </script>
 </body>
+
 </html>

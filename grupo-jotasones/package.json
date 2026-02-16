@@ -22,7 +22,7 @@
     "csvtojson": "^2.0.14",
     "express": "^5.2.1",
     "mongoose": "^9.1.6",
-    "mysql2": "^3.16.2",
+    "mysql2": "^3.17.1",
     "node-fetch": "^3.3.2"
   }
 }

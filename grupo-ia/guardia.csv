@@ -1,0 +1,53 @@
+Dia,Orden,Rango,Tipo,Profesor,Ubicacion,Tarea
+Lunes,1,08:15 - 09:15,GUARDIA,Juan Pérez,Biblioteca,
+Lunes,1,08:15 - 09:15,GUARDIA,Ana García,Pasillo 1,
+Lunes,1,08:15 - 09:15,AUSENCIA,Marta Sanchez,2º ESO A,Examen lengua
+Lunes,2,09:15 - 10:15,GUARDIA,Pedro T.,Sala Profesores,
+Lunes,2,09:15 - 10:15,GUARDIA,Isabel R.,Patio,
+Lunes,3,10:15 - 11:15,GUARDIA,Diego L.,Biblioteca,
+Lunes,3,10:15 - 11:15,AUSENCIA,Francisco J.,3º ESO C,Corrección exámenes
+Lunes,4,11:15 - 12:15,GUARDIA,Mercedes S.,Pasillo 2,
+Lunes,5,12:15 - 13:15,GUARDIA,Antonio M.,Sala Profesores,
+Lunes,5,12:15 - 13:15,GUARDIA,Rosa T.,Entrada Principal,
+Lunes,6,13:15 - 14:15,AUSENCIA,Javier G.,1º Bachillerato,Proyectos de clase
+Martes,1,08:15 - 09:15,GUARDIA,Laura M.,Pasillo 2,
+Martes,1,08:15 - 09:15,AUSENCIA,Elena V.,2º ESO B,Tareas de seguimiento
+Martes,2,09:15 - 10:15,GUARDIA,Carlos R.,Biblioteca,
+Martes,2,09:15 - 10:15,AUSENCIA,David H.,4º ESO A,Preparación selectividad
+Martes,3,10:15 - 11:15,GUARDIA,Patricia L.,Patio,
+Martes,3,10:15 - 11:15,GUARDIA,Mónica G.,Pasillo 1,
+Martes,4,11:15 - 12:15,GUARDIA,Andrés F.,Sala Profesores,
+Martes,5,12:15 - 13:15,GUARDIA,Sofía N.,Entrada Principal,
+Martes,6,13:15 - 14:15,AUSENCIA,Roberto P.,3º ESO A,Ejercicios prácticos
+Martes,6,13:15 - 14:15,GUARDIA,Verónica M.,Biblioteca,
+Miércoles,1,08:15 - 09:15,GUARDIA,Tomás E.,Pasillo 2,
+Miércoles,1,08:15 - 09:15,GUARDIA,Gloria A.,Biblioteca,
+Miércoles,2,09:15 - 10:15,AUSENCIA,Hugo B.,2º ESO C,Resolución de problemas
+Miércoles,2,09:15 - 10:15,GUARDIA,Lucía D.,Patio,
+Miércoles,3,10:15 - 11:15,GUARDIA,Enrique S.,Sala Profesores,
+Miércoles,3,10:15 - 11:15,GUARDIA,Beatriz C.,Pasillo 1,
+Miércoles,4,11:15 - 12:15,AUSENCIA,Víctor K.,1º ESO A,Refuerzo académico
+Miércoles,5,12:15 - 13:15,GUARDIA,Almudena J.,Entrada Principal,
+Miércoles,5,12:15 - 13:15,GUARDIA,Raúl O.,Biblioteca,
+Miércoles,6,13:15 - 14:15,GUARDIA,Susana Z.,Pasillo 2,
+Jueves,1,08:15 - 09:15,AUSENCIA,Irene F.,3º ESO B,Evaluación continua
+Jueves,1,08:15 - 09:15,GUARDIA,Mateo G.,Sala Profesores,
+Jueves,2,09:15 - 10:15,GUARDIA,Nuria H.,Biblioteca,
+Jueves,2,09:15 - 10:15,GUARDIA,Lucas I.,Patio,
+Jueves,3,10:15 - 11:15,GUARDIA,Olivia J.,Pasillo 1,
+Jueves,3,10:15 - 11:15,AUSENCIA,Óscar L.,4º ESO B,Trabajo en equipo
+Jueves,4,11:15 - 12:15,GUARDIA,Pilar M.,Entrada Principal,
+Jueves,5,12:15 - 13:15,GUARDIA,Quentin N.,Pasillo 2,
+Jueves,5,12:15 - 13:15,GUARDIA,Ramona O.,Sala Profesores,
+Jueves,6,13:15 - 14:15,AUSENCIA,Silvia P.,2º Bachillerato,Proyectos de investigación
+Viernes,1,08:15 - 09:15,GUARDIA,Teodoro Q.,Biblioteca,
+Viernes,1,08:15 - 09:15,GUARDIA,Úrsula R.,Pasillo 2,
+Viernes,2,09:15 - 10:15,AUSENCIA,Valentín S.,1º ESO C,Evaluación formativa
+Viernes,2,09:15 - 10:15,GUARDIA,Wenceslao T.,Patio,
+Viernes,3,10:15 - 11:15,GUARDIA,Ximena U.,Sala Profesores,
+Viernes,3,10:15 - 11:15,GUARDIA,Yolanda V.,Pasillo 1,
+Viernes,4,11:15 - 12:15,AUSENCIA,Zacarías W.,3º ESO D,Tutoría individual
+Viernes,4,11:15 - 12:15,GUARDIA,Adriana X.,Entrada Principal,
+Viernes,5,12:15 - 13:15,GUARDIA,Baltasar Y.,Biblioteca,
+Viernes,6,13:15 - 14:15,GUARDIA,Casandra Z.,Pasillo 2,
+Viernes,6,13:15 - 14:15,AUSENCIA,Demócrates A.,4º ESO C,Actividades complementarias
