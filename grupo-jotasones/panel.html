@@ -212,13 +212,104 @@
 
         .cards-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 10px;
             min-height: 70px;
             background: var(--surface);
             border-radius: var(--radius);
             padding: 12px;
             border: 1px solid var(--border);
+            flex: 1;
+        }
+
+        .hora-content {
+            display: flex;
+            gap: 12px;
+            flex: 1;
+        }
+
+        .guardias-panel {
+            width: 240px;
+            min-width: 200px;
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 12px;
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .guardias-panel-title {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-dim);
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .guardias-list {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .guardia-chip {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+            padding: 7px 10px;
+            background: var(--surface2);
+            border-radius: 8px;
+            font-size: 0.82rem;
+            border: 1px solid var(--border);
+            transition: all 0.15s;
+        }
+
+        .guardia-chip:hover {
+            border-color: var(--green);
+            background: var(--green-bg);
+        }
+
+        .guardia-chip .chip-nombre {
+            font-weight: 500;
+            color: var(--text);
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .guardia-chip .chip-badge {
+            font-size: 0.6rem;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .guardias-empty {
+            font-size: 0.78rem;
+            color: var(--text-dim);
+            font-style: italic;
+            padding: 8px 0;
+        }
+
+        @media (max-width: 1100px) {
+            .hora-content {
+                flex-direction: column;
+            }
+
+            .guardias-panel {
+                width: 100%;
+            }
         }
 
         .empty-slot {
@@ -746,6 +837,7 @@
         let profesores = [];
         let grupos = [];
         let guardias = [];
+        let profesoresGuardia = {};
         let ausenciaParaGuardia = null;
 
         // ===== INIT =====
@@ -852,6 +944,7 @@
 
                 datosPanel = data.ausencias || [];
                 guardias = data.guardias_asignadas || [];
+                profesoresGuardia = data.profesores_guardia || {};
                 const resumen = data.resumen || {};
 
                 // Render summary badges
@@ -898,8 +991,27 @@
 
             for (let h = 1; h <= 6; h++) {
                 const eventos = datosPanel.filter(e => e.hora_inicio == h);
-                let cartas = '';
+                const guardiasHora = profesoresGuardia[h] || [];
 
+                // Panel izquierdo: profesores de guardia
+                let guardiasHtml = '';
+                if (guardiasHora.length === 0) {
+                    guardiasHtml = '<div class="guardias-empty">Sin datos de guardia</div>';
+                } else {
+                    guardiasHtml = guardiasHora.map(g => {
+                        let badgeClass = '', badgeColor = '';
+                        if (g.origen.includes('Moteros')) { badgeClass = 'badge-moteros'; badgeColor = 'var(--orange-bg)'; }
+                        else if (g.origen.includes('Célula')) { badgeClass = 'badge-celula'; badgeColor = 'var(--green-bg)'; }
+                        else if (g.origen.includes('Duoia') || g.origen.includes('IA')) { badgeClass = 'badge-duoia'; badgeColor = 'var(--purple-bg)'; }
+                        return `<div class="guardia-chip">
+                            <span class="chip-nombre" title="${g.nombre}">${g.nombre}</span>
+                            <span class="chip-badge ${badgeClass}">${g.origen.split(' ')[0]}</span>
+                        </div>`;
+                    }).join('');
+                }
+
+                // Panel derecho: tarjetas de ausencias
+                let cartas = '';
                 if (eventos.length === 0) {
                     cartas = '<div class="empty-slot">Sin incidencias</div>';
                 } else {
@@ -933,9 +1045,16 @@
                             </div>`;
                     });
                 }
+
                 html += `<div class="hora-row">
                     <div class="hora-label">${h}ª</div>
-                    <div class="cards-grid">${cartas}</div>
+                    <div class="hora-content">
+                        <div class="guardias-panel">
+                            <div class="guardias-panel-title">🛡️ Guardia</div>
+                            <div class="guardias-list">${guardiasHtml}</div>
+                        </div>
+                        <div class="cards-grid">${cartas}</div>
+                    </div>
                 </div>`;
             }
             timeline.innerHTML = html;
@@ -996,6 +1115,29 @@
             ausenciaParaGuardia = { id: ausenciaId, hora };
             document.getElementById('guardiaInfo').textContent =
                 `Cubrir ausencia de ${profesorAusente} en la ${hora}ª hora`;
+
+            // Poblar con profesores de guardia de esa hora, si los hay
+            const selPG = document.getElementById('selProfesorGuardia');
+            const guardiasHora = profesoresGuardia[hora] || [];
+            if (guardiasHora.length > 0) {
+                // Mostrar primero los de guardia de esa hora, luego separador, luego todos
+                let opts = '<optgroup label="De guardia esta hora">';
+                guardiasHora.forEach(g => {
+                    opts += `<option value="${g.nombre}">${g.nombre} (${g.origen})</option>`;
+                });
+                opts += '</optgroup>';
+                opts += '<optgroup label="Todos los profesores">';
+                profesores.forEach(p => {
+                    opts += `<option value="${p.nombre} ${p.apellidos}">${p.nombre} ${p.apellidos}</option>`;
+                });
+                opts += '</optgroup>';
+                selPG.innerHTML = opts;
+            } else {
+                selPG.innerHTML = profesores.map(p =>
+                    `<option value="${p.nombre} ${p.apellidos}">${p.nombre} ${p.apellidos}</option>`
+                ).join('');
+            }
+
             document.getElementById('modalGuardia').style.display = 'flex';
         }
         function cerrarModalGuardia() {

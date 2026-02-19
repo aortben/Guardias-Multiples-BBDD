@@ -3,18 +3,38 @@ const cors = require('cors');
 const { spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
+const mysql = require('mysql2/promise');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
 // ========================================================
-//  CONFIGURACIÓN
+//  URLS
 // ========================================================
 const JOTASONES_API_URL = 'http://172.22.0.152:3000/api/v1';
 const MOTEROS_URL = 'http://localhost:3001';
 const CELULA_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz6veJ_02mh-L1-LmzJTfQpFgUBHKKg3MN__4OQ_NHleaaS2gFz_Yy-CNwqDgNi5jQwzw/exec';
 const DUOIA_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRLBHYrwNyk20UoDwqBu-zfDXWSyeRtsg536axelI0eEHYsovoMiwgoS82tjGRy6Tysw3Pj6ovDiyzo/pub?gid=1908899796&single=true&output=csv';
+
+// ========================================================
+//  CONFIGURACIÓN MYSQL
+// ========================================================
+const dbConfig = {
+    host: 'localhost',
+    user: 'root',
+    password: '',
+    database: 'guardias',
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
+};
+let pool;
+try {
+    pool = mysql.createPool(dbConfig);
+} catch (e) {
+    console.error('Error creando pool MySQL:', e);
+}
 
 // ========================================================
 //  LOG DE TRÁFICO (últimas 100 peticiones)
@@ -31,13 +51,10 @@ function addTrafficEntry(method, url, timeMs, status, source) {
     });
     if (trafficLog.length > MAX_LOG) trafficLog.pop();
 }
-
-// Middleware: mide TODAS las peticiones que pasan por Express
 app.use((req, res, next) => {
     const start = process.hrtime.bigint();
     res.on('finish', () => {
         const elapsed = Number(process.hrtime.bigint() - start) / 1e6;
-        // Solo logueamos rutas /api (NO intentar set headers aquí, ya se enviaron)
         if (req.originalUrl.startsWith('/api')) {
             addTrafficEntry(req.method, req.originalUrl, elapsed, res.statusCode, 'gateway');
             console.log(`📡 [${req.method}] ${req.originalUrl} → ${res.statusCode} (${elapsed.toFixed(1)} ms)`);
@@ -54,9 +71,9 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, fs.existsSync(path.join(__dirname, 'panel.html')) ? 'panel.html' : 'index.html'));
 });
 
-// Webs de otros grupos
-app.use('/ia', express.static(path.join(__dirname, '../grupo-ia')));
-app.use('/celula', express.static(path.join(__dirname, '../grupo-celula-eucariota')));
+// // Webs de otros grupos
+// app.use('/ia', express.static(path.join(__dirname, '../grupo-ia')));
+// app.use('/celula', express.static(path.join(__dirname, '../grupo-celula-eucariota')));
 
 // ========================================================
 //  DATOS LOCALES DE RESPALDO
@@ -81,7 +98,7 @@ const GRUPOS_RESPALDO = [
 
 // Almacén en memoria para ausencias locales y guardias asignadas
 let ausenciasLocales = [];
-let guardiasAsignadas = []; // { id, ausencia_id, profesor_nombre, hora, fecha }
+let guardiasAsignadas = [];
 let nextAusenciaId = 1000;
 let nextGuardiaId = 5000;
 
@@ -107,7 +124,7 @@ async function fetchConTiempo(url, opciones = {}, source = 'externo') {
 //  API: PROFESORES (agregados de TODOS los grupos)
 // ========================================================
 app.get('/api/profesores', async (req, res) => {
-    const todosNombres = new Map(); // nombre_completo -> {id, nombre, apellidos, origen}
+    const todosNombres = new Map();
     let nextId = 100;
 
     // Helper para añadir si no existe
@@ -296,6 +313,56 @@ app.get('/api/trafico', (req, res) => {
 });
 
 // ========================================================
+//  API: MYSQL (Datos directos DB)
+// ========================================================
+app.get('/api/sql/profesores', async (req, res) => {
+    try {
+        const [rows] = await pool.query('SELECT * FROM profesores');
+        res.json(rows);
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: 'Error accediendo a BD', detalle: e.message });
+    }
+});
+
+app.get('/api/sql/grupos', async (req, res) => {
+    try {
+        const [rows] = await pool.query('SELECT * FROM grupos');
+        res.json(rows);
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: 'Error accediendo a BD', detalle: e.message });
+    }
+});
+
+app.get('/api/sql/reportes', async (req, res) => {
+    try {
+        // JOIN opcional para ver nombres en vez de IDs si se prefiere
+        // const [rows] = await pool.query(`
+        //     SELECT r.*, p.nombre as profe, p.apellidos, g.nombre as grupo 
+        //     FROM reportes r 
+        //     JOIN profesores p ON r.profesor_id = p.id 
+        //     JOIN grupos g ON r.grupo_id = g.id
+        // `);
+        const [rows] = await pool.query('SELECT * FROM reportes');
+        res.json(rows);
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: 'Error accediendo a BD', detalle: e.message });
+    }
+});
+
+app.get('/api/sql/guardias', async (req, res) => {
+    try {
+        const [rows] = await pool.query('SELECT * FROM guardias');
+        res.json(rows);
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: 'Error accediendo a BD', detalle: e.message });
+    }
+});
+
+// ========================================================
 //  EL CEREBRO: PANEL UNIFICADO
 // ========================================================
 app.get('/api/panel', async (req, res) => {
@@ -339,7 +406,7 @@ app.get('/api/panel', async (req, res) => {
     )
         .then(async ({ response }) => {
             const d = await response.json();
-            return (d.ausencias || []).map(a => ({
+            const ausencias = (d.ausencias || []).map(a => ({
                 id: 'm-' + Math.random().toString(36).substr(2, 6),
                 origen: 'Los Moteros',
                 profesor: a.profesor?.nombre ? `${a.profesor.nombre} ${a.profesor.apellidos || ''}`.trim() : (a.profesor || '?'),
@@ -350,10 +417,17 @@ app.get('/api/panel', async (req, res) => {
                 es_externo: true,
                 guardia_asignada: null
             }));
+            // Extraer profesores de guardia de Moteros
+            const guardias = (d.guardias || []).filter(g => g.status === 'disponible').map(g => {
+                const nombre = g.profesor?.nombre ? `${g.profesor.nombre} ${g.profesor.apellidos || ''}`.trim() : '?';
+                const horaNum = parseInt(String(g.hora).replace(/[^0-9]/g, '')) || 1;
+                return { nombre, hora: horaNum, origen: 'Los Moteros' };
+            });
+            return { ausencias, guardias };
         })
         .catch(() => {
             console.log('  ⚠️ Moteros no accesible');
-            return [];
+            return { ausencias: [], guardias: [] };
         });
 
     // C. CÉLULA EUCARIOTA (Google Apps Script)
@@ -362,7 +436,7 @@ app.get('/api/panel', async (req, res) => {
     )
         .then(async ({ response }) => {
             const d = await response.json();
-            return (d.faltas || []).map(f => ({
+            const ausencias = (d.faltas || []).map(f => ({
                 id: 'c-' + Math.random().toString(36).substr(2, 6),
                 origen: 'Célula Eucariota',
                 profesor: f.profesor || '?',
@@ -373,10 +447,19 @@ app.get('/api/panel', async (req, res) => {
                 es_externo: true,
                 guardia_asignada: null
             }));
+            // Extraer profesores de guardia de Célula
+            const guardias = [];
+            (d.guardias || []).forEach(g => {
+                const horaNum = parseInt(g.hora) || 1;
+                (g.profesores || []).forEach(nombre => {
+                    guardias.push({ nombre: nombre.trim(), hora: horaNum, origen: 'Célula Eucariota' });
+                });
+            });
+            return { ausencias, guardias };
         })
         .catch(() => {
             console.log('  ⚠️ Célula Eucariota no accesible');
-            return [];
+            return { ausencias: [], guardias: [] };
         });
 
     // D. IA / DUOIA (Google Sheets CSV)
@@ -390,10 +473,14 @@ app.get('/api/panel', async (req, res) => {
                 prof: h.indexOf('profesor'), hora: h.indexOf('orden'),
                 aula: h.indexOf('ubicacion'), tarea: h.indexOf('tarea')
             };
-            return filas.slice(1).map(l => {
+            const ausencias = [];
+            const guardias = [];
+            filas.slice(1).forEach(l => {
                 const c = l.split(',');
-                if (c[idx.dia]?.trim().toLowerCase() === diaSemana.toLowerCase() && c[idx.tipo]?.trim() === 'AUSENCIA') {
-                    return {
+                if (c[idx.dia]?.trim().toLowerCase() !== diaSemana.toLowerCase()) return;
+                const tipo = c[idx.tipo]?.trim();
+                if (tipo === 'AUSENCIA') {
+                    ausencias.push({
                         id: 'd-' + Math.random().toString(36).substr(2, 6),
                         origen: 'IA (Duoia)',
                         profesor: c[idx.prof]?.trim() || '?',
@@ -403,19 +490,31 @@ app.get('/api/panel', async (req, res) => {
                         tarea: c[idx.tarea]?.trim() || 'Sin tarea',
                         es_externo: true,
                         guardia_asignada: null
-                    };
+                    });
+                } else if (tipo === 'GUARDIA') {
+                    guardias.push({
+                        nombre: c[idx.prof]?.trim() || '?',
+                        hora: parseInt(c[idx.hora]) || 1,
+                        origen: 'IA (Duoia)'
+                    });
                 }
-            }).filter(Boolean);
+            });
+            return { ausencias, guardias };
         })
         .catch(() => {
             console.log('  ⚠️ IA/Duoia no accesible');
-            return [];
+            return { ausencias: [], guardias: [] };
         });
 
     try {
-        const [jotasones, moteros, celula, duoia] = await Promise.all([
+        const [jotasones, moterosData, celulaData, duoiaData] = await Promise.all([
             jotasonesPromise, moterosPromise, celulaPromise, duoiaPromise
         ]);
+
+        // Extraer ausencias (Jotasones devuelve array directo, los demás {ausencias, guardias})
+        const moteros = moterosData.ausencias || [];
+        const celula = celulaData.ausencias || [];
+        const duoia = duoiaData.ausencias || [];
 
         const todas = [...jotasones, ...moteros, ...celula, ...duoia];
 
@@ -430,7 +529,23 @@ app.get('/api/panel', async (req, res) => {
                 }
             });
 
+        // Combinar profesores de guardia de todas las fuentes, agrupados por hora
+        const todasGuardias = [
+            ...(moterosData.guardias || []),
+            ...(celulaData.guardias || []),
+            ...(duoiaData.guardias || [])
+        ];
+        const profesoresGuardia = {};
+        for (let h = 1; h <= 6; h++) profesoresGuardia[h] = [];
+        todasGuardias.forEach(g => {
+            const h = g.hora;
+            if (h >= 1 && h <= 6) {
+                profesoresGuardia[h].push({ nombre: g.nombre, origen: g.origen });
+            }
+        });
+
         console.log(`  📊 Resultados: Jotasones=${jotasones.length}, Moteros=${moteros.length}, Célula=${celula.length}, Duoia=${duoia.length}`);
+        console.log(`  👮 Guardias disponibles: ${todasGuardias.length} profesores`);
         console.log('─'.repeat(50));
 
         res.json({
@@ -442,7 +557,8 @@ app.get('/api/panel', async (req, res) => {
                 duoia: duoia.length,
                 total: todas.length
             },
-            guardias_asignadas: guardiasAsignadas.filter(g => g.fecha === fecha)
+            guardias_asignadas: guardiasAsignadas.filter(g => g.fecha === fecha),
+            profesores_guardia: profesoresGuardia
         });
     } catch (e) {
         console.error('❌ Error combinando:', e.message);
