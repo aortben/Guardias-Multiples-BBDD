@@ -578,6 +578,7 @@ Al cargar la página:
 1. Se establece la fecha de hoy en el datePicker.
 2. Se cargan profesores y grupos para los desplegables.
 3. Se lanza la sincronización automáticamente.
+4. La función `cargarDesplegables` carga `datosPanel` y otros elementos necesarios.
 
 La variable `profesoresGuardia` es un objeto donde cada clave es un número de hora (1-6) y el valor es un array de `{ nombre, origen }` con los profesores que tienen guardia esa hora.
 
@@ -800,23 +801,77 @@ npm install
 cd ../grupo-losmoteros
 npm install
 
-# 3. Volver a Jotasones y arrancar (lanza Moteros automáticamente)
+# 3. Arrancar gateway
 cd ../grupo-jotasones
 node server.js
 ```
 
-Abrir `http://localhost:3000` en el navegador. El panel se carga con la fecha de hoy y sincroniza automáticamente.
+El servidor arranca en `http://localhost:3000` y lanza automáticamente Moteros en `http://localhost:3001`.
 
 ---
 
-## 8. Conclusiones
+## 8. API REST MySQL y Despliegue en VM
 
-El panel demuestra cómo integrar **4 fuentes de datos heterogéneas** (MySQL, MongoDB, Google Apps Script, CSV) en una interfaz unificada. Las decisiones técnicas clave son:
+### 8.1 API JSON para base de datos MySQL
 
-- **`Promise.all`** para consultas en paralelo (rendimiento)
-- **Normalización** de datos con formato distinto a un esquema común
-- **Tolerancia a fallos** con `try/catch` + `[] por defecto` (la caída de un grupo no afecta a los demás)
-- **Actualización local** de guardias sin re-sincronizar (UX instantánea)
-- **Fallback** con datos locales cuando la API remota no está disponible
-- **Doble extracción** de ausencias y guardias de cada fuente, permitiendo mostrar quién puede cubrir cada hora
-- **Asignación contextual** que prioriza los profesores de guardia de la hora concreta frente a la lista completa
+Para permitir que otros compañeros consuman los datos de la base de datos `guardias` (creada por `scriptsql.sql`) desde la red local, se han añadido endpoints específicos en `server.js` conectando directamente con MySQL.
+
+#### **Endpoints creados**
+
+| Método | URL | Descripción |
+|---|---|---|
+| `GET` | `/api/sql/profesores` | Devuelve lista JSON de todos los profesores |
+| `GET` | `/api/sql/grupos` | Devuelve lista JSON de grupos |
+| `GET` | `/api/sql/reportes` | Devuelve el histórico de reportes de ausencias |
+| `GET` | `/api/sql/guardias` | Devuelve el histórico de asignaciones de guardia |
+
+#### **Implementación técnica**
+
+Se utiliza la librería `mysql2/promise` para conexiones asíncronas.
+
+```javascript
+const mysql = require('mysql2/promise');
+const dbConfig = {
+    host: 'localhost',
+    user: 'root',
+    password: '',
+    database: 'guardias',
+    // ...
+};
+
+// Ejemplo de endpoint
+app.get('/api/sql/profesores', async (req, res) => {
+    try {
+        const [rows] = await pool.query('SELECT * FROM profesores');
+        res.json(rows);
+    } catch (e) {
+        res.status(500).json({ error: 'Error accediendo a BD' });
+    }
+});
+```
+
+### 8.2 Despliegue en Máquina Virtual Lubuntu
+
+Para centralizar el servicio y que no dependa de un ordenador personal, se ha preparado el despliegue en una VM Lubuntu (`172.22.0.205`).
+
+#### **Estrategia de despliegue**
+
+1.  **Repositorio Git:** Se clona el proyecto completo en la VM para facilitar actualizaciones (`git pull`).
+2.  **Gestor de Procesos (PM2):** Se utiliza `pm2` en lugar de ejecutar `node server.js` manualmente. Esto asegura que:
+    *   La aplicación se reinicie automáticamente tras fallos.
+    *   El servicio arranque solo al iniciar la máquina virtual.
+3.  **Base de datos MySQL:** Se configura MySQL en la VM con el esquema `guardias`.
+
+#### **Comandos clave**
+
+```bash
+# Lanzar aplicación con PM2
+pm2 start server.js --name "api-jotasones"
+
+# Guardar lista de procesos para el reinicio
+pm2 save
+pm2 startup
+```
+
+Con este despliegue, cualquier compañero en la red puede acceder a la API mediante:
+`http://172.22.0.205:3000/api/sql/profesores`
