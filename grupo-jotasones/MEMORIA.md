@@ -96,6 +96,7 @@ const cors = require('cors');
 const { spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
+require('dotenv').config();
 
 const app = express();
 app.use(cors());
@@ -107,13 +108,13 @@ app.use(express.json());
 - **spawn**: Se usa para lanzar el servidor de Moteros como proceso hijo (se explica más adelante).
 - **path / fs**: Utilidades de Node.js para manejar rutas de archivos y comprobar si existen.
 
-Las URLs de los 4 grupos se definen como constantes para no repetirlas en cada endpoint:
+Las URLs de los 4 grupos se definen usando variables de entorno (`process.env`) para facilitar el despliegue tanto en local como en la Máquina Virtual:
 
 ```javascript
-const JOTASONES_API_URL = 'http://172.22.0.152:3000/api/v1';
-const MOTEROS_URL = 'http://localhost:3001';
-const CELULA_SCRIPT_URL = 'https://script.google.com/macros/s/.../exec';
-const DUOIA_CSV_URL = 'https://docs.google.com/spreadsheets/.../output=csv';
+const JOTASONES_API_URL = process.env.JOTASONES_API_URL || 'http://localhost:3000/api/v1';
+const MOTEROS_URL = process.env.MOTEROS_URL || 'http://localhost:3001';
+const CELULA_SCRIPT_URL = process.env.CELULA_SCRIPT_URL || 'https://script.google.com/macros/s/.../exec';
+const DUOIA_CSV_URL = process.env.DUOIA_CSV_URL || 'https://docs.google.com/spreadsheets/.../output=csv';
 ```
 
 ### 3.2 Sistema de log de tráfico (líneas 19–47)

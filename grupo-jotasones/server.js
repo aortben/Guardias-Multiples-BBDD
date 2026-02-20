@@ -47,9 +47,6 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, fs.existsSync(path.join(__dirname, 'panel.html')) ? 'panel.html' : 'index.html'));
 });
 
-app.use('/ia', express.static(path.join(__dirname, '../grupo-ia')));
-app.use('/celula', express.static(path.join(__dirname, '../grupo-celula')));
-
 // Helper para Fetch con Timeout
 async function fetchConTiempo(url, opciones = {}) {
     try {
